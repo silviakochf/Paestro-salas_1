@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PAESTRO - Login</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='css/favicon12.png') }}" type="image/png"> 
+    <meta name="msapplication-TileColor" content="#ffffff"> 
+    <meta name="theme-color" content="#ffffff">
+</head>
+<body>
+    <div class="login-page">
+        <div class="login-logo-container">
+            <div class="logo-container">
+                <img src="{{ url_for('static', filename='images/logo_paestro.png') }}" alt="Logo PAESTRO" class="logo">
+            </div>
+        </div>
+
+        <main>
+            <div class="login-container">
+                <h3>Acesso ao Sistema</h3>
+                <form id="login-form" novalidate>
+                    <div class="form-group">
+                        <label for="username">Equipe</label>
+                        <input type="text" id="username" required placeholder="Ex: Munich e Guilherme">
+                    </div>
+                    <div class="form-group">
+                        <label for="periodo">Período</label>
+                        <select id="periodo" name="periodo" required>
+                            <option value="">Selecione o período</option>
+                            <option value="matutino">Matutino</option>
+                            <option value="vespertino">Vespertino</option>
+                        </select>
+                        <div class="error-message" id="periodo-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="senha">Senha de Acesso</label>
+                        <input type="password" id="senha" name="senha" required placeholder="Digite a senha">
+                        <div class="error-message" id="senha-error"></div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn-action btn-login">Entrar</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+
+        <footer>
+            <p>Secretaria de Educação © {{ now.year }}</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/login.js') }}"></script>
+</body>
+</html>

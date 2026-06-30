@@ -1,0 +1,341 @@
+.export-container {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  padding: 2.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  text-align: center;
+}
+
+.export-container h3 {
+  margin-bottom: 2rem;
+  color: var(--primary-color);
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.export-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.export-divider {
+  display: flex;
+  align-items: center;
+  margin: 1rem 0;
+  color: #6c757d;
+}
+
+.export-divider::before,
+.export-divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.export-divider::before {
+  margin-right: 1rem;
+}
+
+.export-divider::after {
+  margin-left: 1rem;
+}
+
+.buttons-container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.btn-action {
+  min-width: 240px;
+  padding: 0.75rem 1.5rem;
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-action:hover {
+  transform: translateY(-1px);
+}
+
+.btn-action svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+/* Botão Salvar no Drive */
+#salvar-drive-btn {
+  background-color: #4285F4;
+}
+
+#salvar-drive-btn:hover {
+  background-color: #3367D6;
+}
+
+/* Botão Baixar */
+#baixar-excel-btn {
+  background-color: #2e8b57;
+}
+
+#baixar-excel-btn:hover {
+  background-color: #3cb371;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+/* Custom Select Styles */
+.custom-select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.custom-select {
+  position: relative;
+  width: 100%;
+  height: 48px;
+  border: 1px solid #ced4da;
+  border-radius: var(--border-radius);
+  background: white;
+  display: flex;
+  align-items: center;
+  padding-left: 40px; /* Space for the magnifying glass icon */
+  box-sizing: border-box;
+}
+
+.custom-select::before {
+  content: '';
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="gray"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-1.42 1.42l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C11.67 14 14 11.67 14 9.5S11.67 5 9.5 5 5 7.33 5 9.5 7.33 14 9.5 14z"/></svg>');
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.custom-select-input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  padding: 0 40px 0 0; /* Space for the clear and arrow icons */
+  box-sizing: border-box;
+  background: transparent;
+  line-height: 46px; /* Aligns text vertically */
+}
+
+.custom-select-input::placeholder {
+  color: #adb5bd;
+}
+
+.custom-select-clear {
+  position: absolute;
+  right: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 1rem;
+  color: #6c757d;
+}
+
+.custom-select-arrow {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.custom-select-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ced4da;
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.custom-select-option {
+  padding: 0.75rem;
+  cursor: pointer;
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.custom-select-option:hover {
+  background-color: #f8f9fa;
+}
+
+/* Responsividade */
+@media (max-width: 1024px) {
+  /* Tablets e dispositivos maiores */
+  .export-container {
+    max-width: 700px;
+    padding: 2.25rem;
+  }
+  
+  .btn-action {
+    min-width: 220px;
+  }
+  
+  .custom-select-dropdown {
+    max-height: 180px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Tablets menores */
+  .export-container {
+    max-width: 600px;
+    padding: 2rem;
+    margin: 0 auto;
+  }
+  
+  .export-container h3 {
+    font-size: 1.4rem;
+    margin-bottom: 1.75rem;
+  }
+  
+  .export-options {
+    gap: 1.25rem;
+  }
+  
+  .buttons-container {
+    gap: 0.75rem;
+  }
+  
+  .btn-action {
+    min-width: 200px;
+    padding: 0.7rem 1.25rem;
+    font-size: 0.95rem;
+  }
+  
+  .custom-select {
+    height: 44px;
+  }
+  
+  .custom-select-input {
+    font-size: 0.95rem;
+    line-height: 44px;
+  }
+  
+  .logo {
+    height: 130px;
+  }
+  
+  .custom-select-option {
+    padding: 0.7rem;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 600px) {
+  /* Dispositivos móveis */
+  .export-container {
+    padding: 1.75rem;
+    margin: 1rem;
+    max-width: none;
+  }
+  
+  .export-container h3 {
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .buttons-container {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .btn-action {
+    width: 100%;
+    min-width: auto;
+    font-size: 0.9rem;
+  }
+  
+  .custom-select {
+    height: 40px;
+  }
+  
+  .custom-select-input {
+    font-size: 0.9rem;
+    line-height: 40px;
+  }
+  
+  .custom-select-dropdown {
+    max-height: 160px;
+  }
+  
+  .custom-select-option {
+    padding: 0.65rem;
+    font-size: 0.9rem;
+  }
+  
+  .export-divider::before {
+    margin-right: 0.75rem;
+  }
+  
+  .export-divider::after {
+    margin-left: 0.75rem;
+  }
+  
+  .logo {
+    height: 110px;
+  }
+}
+
+@media (max-width: 400px) {
+  /* Smartphones pequenos */
+  .export-container {
+    padding: 1.5rem 1.25rem;
+    margin: 0.75rem;
+  }
+  
+  .export-container h3 {
+    font-size: 1.2rem;
+  }
+  
+  .btn-action svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .logo {
+    height: 90px;
+  }
+}
+
+.logo {
+  height: 150px; 
+  width: auto;
+  display: block;
+  margin: 0 auto;
+}

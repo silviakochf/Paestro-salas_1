@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PAESTRO - Importar</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/importar.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='css/favicon12.png') }}" type="image/png">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="theme-color" content="#ffffff">
+</head>
+<body>
+    <div class="header-wrapper">
+        <header>
+            <div class="header-left">
+                <span id="data-atual"></span>
+                <span id="periodo-usuario"></span>
+            </div>
+            <div class="header-center">
+                <img src="{{ url_for('static', filename='images/logo_paestro.png') }}" alt="Logo PAESTRO" class="logo">
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <div class="user-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <span id="nome-usuario"></span>
+                </div>
+            </div>
+        </header>
+    </div>
+
+    <nav class="nav-container">
+        <div class="nav-links">
+            <a href="/" class="nav-link">
+                <i class="fas fa-home"></i> Início
+            </a>
+            <a href="/importar" class="nav-link active">
+                <i class="fas fa-file-import"></i> Importar
+            </a>
+            <a href="/salas" class="nav-link">
+                <i class="fas fa-door-open"></i> Salas
+            </a>
+            <a href="/exportar" class="nav-link">
+                <i class="fas fa-file-export"></i> Exportar
+            </a>
+        </div>
+    </nav>
+
+    <main>
+        <div class="container">
+            <h3>Importar Relatório HTML do EducarWEB</h3>
+            <p style="text-align:center;color:#64748b;font-size:.9rem;margin-top:-1rem;margin-bottom:1.5rem">
+                O sistema lê automaticamente turma, sala e turno de cada escola para a conferência.
+            </p>
+
+            <div class="unified-import-section">
+                <div class="drop-zone" id="drop-area">
+                    <div class="drop-zone-inner">
+                        <div class="drop-zone-icon">
+                            <svg width="48" height="48" viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M19.35,10.04C18.67,6.59 15.64,4 12,4C9.11,4 6.6,5.64 5.35,8.04C2.34,8.36 0,10.91 0,14A6,6 0 0,0 6,20H19A5,5 0 0,0 24,15C24,12.36 21.95,10.22 19.35,10.04M19,18H6A4,4 0 0,1 2,14C2,11.95 3.53,10.24 5.56,10.03L6.63,9.92L7.13,8.97C8.08,7.14 9.94,6 12,6C14.62,6 16.88,7.86 17.39,10.43L17.69,11.93L19.22,12.04C20.78,12.14 22,13.45 22,15A3,3 0 0,1 19,18M8,13H10.55V16H13.45V13H16L12,9L8,13Z"/>
+                            </svg>
+                        </div>
+                        <div class="drop-zone-text">
+                            <p>Arraste e solte os arquivos HTML ou escolha arquivos</p>
+                            <span class="drop-zone-prompt"></span>
+                        </div>
+
+                        <div class="file-input">
+                            <form id="upload-form" enctype="multipart/form-data">
+                                <input type="file" id="file-input" name="files[]" multiple class="file-input-field" accept=".html, .htm">
+                                <label for="file-input" class="file-input-label">Escolher arquivos HTML</label>
+                                <div id="file-info" style="display: none;">
+                                    <p>Arquivo(s) selecionado(s): <span id="file-name"></span></p>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons" style="margin-top: 15px; text-align: center;">
+                <button type="button" id="process-btn" class="file-input-label">Processar Arquivo(s)</button>
+                <button type="button" id="cancel-btn" class="btn-secondary" style="display: none;">Cancelar</button>
+            </div>
+
+            <div id="results" style="display: none;" class="results-section">
+                <h4>Importação concluída com sucesso!</h4>
+                <p>Foram importadas <span id="escolas-count">0</span> escolas.</p>
+                <button id="go-to-salas" class="btn btn-success">Ir para Conferência de Salas</button>
+            </div>
+
+            <div class="imported-files-section">
+                <h4>Arquivos Importados</h4>
+                <ul id="imported-files-list" class="imported-files-list"></ul>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Secretaria de Educação © {{ now.year }}</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/importar.js') }}"></script>
+</body>
+</html>

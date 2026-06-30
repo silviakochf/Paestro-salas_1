@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PAESTRO - Exportar</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/exportar.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='css/favicon12.png') }}" type="image/png">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="theme-color" content="#ffffff">
+    <style>
+        .escola-export-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: .75rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: .6rem;
+            background: #f8fafc;
+        }
+        .escola-export-row .escola-nome { font-weight: 500; color: #1e293b; font-size: .9rem; }
+        .escola-export-row .escola-info { font-size: .78rem; color: #94a3b8; }
+        .escola-export-actions { display: flex; gap: .4rem; }
+        .btn-export-mini {
+            padding: .35rem .75rem;
+            border-radius: 6px;
+            font-size: .78rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            color: #475569;
+            transition: all .15s;
+        }
+        .btn-export-mini:hover { background: #e2e8f0; }
+        .btn-export-mini.xml { color: #0a192f; border-color: #0a192f; }
+        .btn-export-mini.excel { color: #166534; border-color: #86efac; }
+        #export-result { margin-top: 1rem; font-size: .875rem; text-align: left; }
+        #export-result .res-ok { color: #166534; }
+        #export-result .res-fail { color: #991b1b; }
+    </style>
+</head>
+<body>
+    <div class="header-wrapper">
+        <header>
+            <div class="header-left">
+                <span id="data-atual"></span>
+                <span id="periodo-usuario"></span>
+            </div>
+            <div class="header-center">
+                <img src="{{ url_for('static', filename='images/logo_paestro.png') }}" alt="Logo PAESTRO" class="logo">
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <div class="user-icon"><i class="fas fa-user"></i></div>
+                    <span id="nome-usuario"></span>
+                </div>
+            </div>
+        </header>
+    </div>
+
+    <nav class="nav-container">
+        <div class="nav-links">
+            <a href="/" class="nav-link"><i class="fas fa-home"></i> Início</a>
+            <a href="/importar" class="nav-link"><i class="fas fa-file-import"></i> Importar</a>
+            <a href="/salas" class="nav-link"><i class="fas fa-door-open"></i> Salas</a>
+            <a href="/exportar" class="nav-link active"><i class="fas fa-file-export"></i> Exportar</a>
+        </div>
+    </nav>
+
+    <main>
+        <div class="export-container">
+            <h3><i class="fas fa-file-export"></i> Exportar Relatórios de Conferência</h3>
+
+            <div style="text-align:left;margin-bottom:1.5rem">
+                <h4 style="font-size:1rem;margin-bottom:.75rem;color:#0a192f">Exportar por escola</h4>
+                <div id="escolas-list"></div>
+            </div>
+
+            <div style="border-top:1px solid #e2e8f0;padding-top:1.5rem;text-align:left">
+                <h4 style="font-size:1rem;margin-bottom:.5rem;color:#0a192f">Enviar tudo para o Google Drive</h4>
+                <p style="font-size:.85rem;color:#64748b;margin-bottom:1rem">
+                    Gera um XML para cada escola importada e envia para a pasta do Drive correspondente
+                    (configurada no servidor).
+                </p>
+                <button id="export-all-drive-btn" class="btn btn-action" style="background:#0a192f;color:#fff;padding:.7rem 1.5rem;border-radius:20px;border:none;cursor:pointer">
+                    <i class="fas fa-cloud-upload-alt"></i> Exportar todas as escolas para o Drive
+                </button>
+                <div id="export-result"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Secretaria de Educação © {{ now.year }}</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/exportar.js') }}"></script>
+</body>
+</html>

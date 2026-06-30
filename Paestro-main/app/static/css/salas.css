@@ -1,0 +1,220 @@
+/* ── Conferência de Salas — Estilos ──────────────────────────── */
+
+/* Stats cards */
+.salas-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: .75rem;
+  margin-bottom: 1.5rem;
+}
+.stat-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--border-radius);
+  padding: .9rem 1rem;
+  text-align: center;
+  box-shadow: var(--box-shadow);
+}
+.stat-num  { font-size: 1.9rem; font-weight: 700; line-height: 1; }
+.stat-label{ font-size: .72rem; color: #94a3b8; margin-top: .2rem; }
+.stat-sn .stat-num { color: #065f46; }
+.stat-ne .stat-num { color: #854d0e; }
+.stat-c  .stat-num { color: #991b1b; }
+.stat-pend .stat-num { color: #475569; }
+
+/* Progress bar */
+.prog-wrap {
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  font-size: .85rem;
+  color: #64748b;
+}
+.prog-wrap progress {
+  flex: 1;
+  height: 8px;
+  border-radius: 99px;
+  accent-color: var(--primary-color);
+}
+
+/* Main container */
+.salas-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+.salas-container h3 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: var(--primary-color);
+  font-size: 1.4rem;
+}
+
+/* Filtros */
+.salas-filtros {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  align-items: center;
+}
+.filtro-pill {
+  padding: .3rem .85rem;
+  border-radius: 99px;
+  font-size: .8rem;
+  font-weight: 500;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #475569;
+  cursor: pointer;
+  transition: all .15s;
+}
+.filtro-pill.active,
+.filtro-pill:hover {
+  background: var(--primary-color);
+  color: #fff;
+  border-color: var(--primary-color);
+}
+.salas-search {
+  padding: .42rem .75rem;
+  border-radius: var(--border-radius);
+  border: 1px solid #cbd5e1;
+  font-size: .875rem;
+  width: 200px;
+}
+.salas-search:focus { outline: none; border-color: var(--primary-color); }
+
+/* Table */
+.salas-tabela-container {
+  max-height: 520px;
+  overflow-y: auto;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+.salas-tabela-container table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+.salas-tabela-container thead th {
+  background: var(--primary-color);
+  color: #fff;
+  padding: .6rem .9rem;
+  text-align: left;
+  font-size: .8rem;
+  font-weight: 500;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.salas-tabela-container tbody tr { border-bottom: 1px solid #e2e8f0; transition: background .1s; }
+.salas-tabela-container tbody tr:hover { background: #f8fafc; }
+.salas-tabela-container tbody td { padding: .6rem .9rem; vertical-align: middle; }
+td.sala-col { font-weight: 600; color: var(--primary-color); }
+
+/* Turno badges */
+.turno-badge {
+  display: inline-block;
+  padding: .15rem .55rem;
+  border-radius: 4px;
+  font-size: .72rem;
+  font-weight: 600;
+}
+.turno-manha { background: #fef3c7; color: #92400e; }
+.turno-tarde  { background: #dbeafe; color: #1e40af; }
+
+/* Status opt buttons */
+.opt-group { display: flex; gap: .35rem; }
+.opt-btn {
+  padding: .28rem .65rem;
+  border-radius: 99px;
+  font-size: .8rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1.5px solid #cbd5e1;
+  background: #fff;
+  color: #64748b;
+  transition: all .15s;
+}
+.opt-btn:hover { border-color: #94a3b8; }
+.opt-btn.sel-SN { background: #d1fae5; color: #065f46; border-color: #86efac; }
+.opt-btn.sel-NE { background: #fef9c3; color: #854d0e; border-color: #fde047; }
+.opt-btn.sel-C  { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+.opt-btn.clear  { font-size: .75rem; padding: .2rem .5rem; color: #94a3b8; }
+
+/* Sala real input (shown on NE) */
+.sala-real-input {
+  padding: .32rem .6rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: .8rem;
+  width: 110px;
+  display: none;
+}
+.sala-real-input.visible { display: inline-block; }
+
+/* Obs input */
+.obs-input {
+  padding: .32rem .6rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: .8rem;
+  width: 160px;
+}
+.obs-input:focus { outline: none; border-color: var(--primary-color); }
+
+/* Actions */
+.salas-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+.btn-salas {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .65rem 1.5rem;
+  border-radius: 20px;
+  font-weight: 500;
+  font-size: .9rem;
+  cursor: pointer;
+  border: none;
+  transition: all .2s;
+}
+.btn-salas-primary { background: var(--primary-color); color: #fff; }
+.btn-salas-primary:hover { background: #0d2347; transform: translateY(-1px); }
+.btn-salas-green   { background: #10b981; color: #fff; }
+.btn-salas-green:hover { background: #059669; transform: translateY(-1px); }
+.btn-salas-gray    { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+.btn-salas-gray:hover { background: #e2e8f0; }
+
+/* Empty state */
+.salas-empty {
+  text-align: center;
+  padding: 2.5rem;
+  color: #94a3b8;
+  font-size: .9rem;
+}
+
+/* Toast */
+#salas-toast {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  background: var(--primary-color);
+  color: #fff;
+  padding: .75rem 1.25rem;
+  border-radius: var(--border-radius);
+  font-size: .875rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all .3s;
+  pointer-events: none;
+  z-index: 999;
+}
+#salas-toast.show { opacity: 1; transform: translateY(0); }
