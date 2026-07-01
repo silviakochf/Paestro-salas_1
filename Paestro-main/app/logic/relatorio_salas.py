@@ -21,7 +21,7 @@ PURPLED  = "5B21B6"
 GREEN    = "10B981"
 
 STATUS_MAP = {
-    "SN": (SN_BG, SN_FG, "Sem Necessidade"),
+    "SN": (SN_BG, SN_FG, "Sem Número"),
     "NE": (NE_BG, NE_FG, "Número Errado"),
     "C":  (C_BG,  C_FG,  "Correto"),
     None: (PD_BG, PD_FG, "Pendente"),
@@ -125,7 +125,7 @@ def gerar_relatorio_salas_xlsx(escola: str, turmas: list, marks: dict) -> io.Byt
     # Cards
     cards = [
         ("B", "Total de Turmas",       total,  PRIMARY, WHITE),
-        ("C", "SN — Sem Necessidade",  sn_ct,  SN_BG,  SN_FG),
+        ("C", "SN — Sem Número",       sn_ct,  SN_BG,  SN_FG),
         ("D", "NE — Número Errado",    ne_ct,  NE_BG,  NE_FG),
         ("E", "C — Correto",           c_ct,   C_BG,   C_FG),
         ("F", "Pendentes",             pend,   PD_BG,  PD_FG),

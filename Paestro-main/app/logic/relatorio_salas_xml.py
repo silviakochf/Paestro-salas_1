@@ -37,7 +37,7 @@ def gerar_relatorio_salas_xml(escola: str, turmas: list, marks: dict) -> io.Byte
         f'  <data_geracao>{_esc(now)}</data_geracao>',
         '  <resumo>',
         f'    <total>{total}</total>',
-        f'    <sem_necessidade>{sn_ct}</sem_necessidade>',
+        f'    <sem_numero>{sn_ct}</sem_numero>',
         f'    <numero_errado>{ne_ct}</numero_errado>',
         f'    <correto>{c_ct}</correto>',
         f'    <pendente>{pend}</pendente>',
