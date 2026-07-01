@@ -1,4 +1,5 @@
 import io
+import re
 from datetime import datetime
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
@@ -58,6 +59,25 @@ def _set_widths(ws, widths):
         ws.column_dimensions[col].width = w
 
 
+def _serie_key(turma_nome: str):
+    """Extrai a chave de série da turma: número do ano (escola) ou número do GT (creche)."""
+    m_gt = re.match(r'^GT\s*(\d+)', turma_nome, re.IGNORECASE)
+    if m_gt:
+        return f"GT{m_gt.group(1)}"
+    m_ano = re.match(r'^(\d+)', turma_nome)
+    if m_ano:
+        return m_ano.group(1)
+    return turma_nome.split()[0] if turma_nome else "?"
+
+
+def _serie_label(serie_key: str):
+    if serie_key.startswith("GT"):
+        return f"GT {serie_key[2:]}"
+    if serie_key.isdigit():
+        return f"{serie_key}º ANO"
+    return serie_key
+
+
 def gerar_relatorio_salas_xlsx(escola: str, turmas: list, marks: dict) -> io.BytesIO:
     """
     Gera o relatório Excel de conferência de salas.
@@ -82,7 +102,10 @@ def gerar_relatorio_salas_xlsx(escola: str, turmas: list, marks: dict) -> io.Byt
     done  = sn_ct + ne_ct + c_ct
     pct   = round(done / total * 100) if total else 0
     now   = datetime.now().strftime("%d/%m/%Y %H:%M")
-    series = sorted(set(int(d["turma"][0]) for d in turmas))
+    series = sorted(
+        set(_serie_key(d["turma"]) for d in turmas),
+        key=lambda s: int(s[2:]) if s.startswith("GT") else int(s) if s.isdigit() else 999
+    )
 
     wb = Workbook()
 
@@ -136,15 +159,15 @@ def gerar_relatorio_salas_xlsx(escola: str, turmas: list, marks: dict) -> io.Byt
     _header_row(ws, 11, "F", "Distribuição por Série", PRIMARY, WHITE, 11, 22)
     _col_headers(ws, 12, ["Série","Total","SN","NE","C","Pendente"])
 
-    for ri, ano in enumerate(series, start=13):
-        idx = [i for i, d in enumerate(turmas) if int(d["turma"][0]) == ano]
+    for ri, serie in enumerate(series, start=13):
+        idx = [i for i, d in enumerate(turmas) if _serie_key(d["turma"]) == serie]
         t  = len(idx)
         sn = sum(1 for i in idx if marks_int.get(i, {}).get("status") == "SN")
         ne = sum(1 for i in idx if marks_int.get(i, {}).get("status") == "NE")
         cc = sum(1 for i in idx if marks_int.get(i, {}).get("status") == "C")
         pp = t - sn - ne - cc
         bg = GRAY1 if ri % 2 == 0 else WHITE
-        for ci, v in enumerate([f"{ano}º ANO", t, sn, ne, cc, pp], start=2):
+        for ci, v in enumerate([_serie_label(serie), t, sn, ne, cc, pp], start=2):
             cl = ws[f"{get_column_letter(ci)}{ri}"]
             cl.value = v; cl.fill = _fill(bg)
             cl.font = _font(ci==2, size=9)
@@ -181,7 +204,7 @@ def gerar_relatorio_salas_xlsx(escola: str, turmas: list, marks: dict) -> io.Byt
         m = marks_int.get(ri, {})
         status = m.get("status")
         bg, fg, label = STATUS_MAP.get(status, STATUS_MAP[None])
-        serie = d["turma"].split("º")[0] + "º ANO"
+        serie = _serie_label(_serie_key(d["turma"]))
         row_bg = bg if status else (GRAY1 if ri % 2 == 0 else WHITE)
 
         vals = [ri+1, d["turma"], d["turno"], serie, d["sala"],
@@ -219,7 +242,7 @@ def gerar_relatorio_salas_xlsx(escola: str, turmas: list, marks: dict) -> io.Byt
             m = marks_int[i]
             status = m["status"]
             bg, fg, label = STATUS_MAP[status]
-            serie = d["turma"].split("º")[0] + "º ANO"
+            serie = _serie_label(_serie_key(d["turma"]))
             vals = [ri+1, d["turma"], d["turno"], serie, d["sala"],
                     label, m.get("sala_real","") or "—", m.get("obs","") or "—"]
             for ci, v in enumerate(vals, start=2):
@@ -247,13 +270,13 @@ def gerar_relatorio_salas_xlsx(escola: str, turmas: list, marks: dict) -> io.Byt
     _set_widths(wg, {"A":3,"B":12,"C":10,"D":10,"E":10,"F":10})
 
     _col_headers(wg, 2, ["Série","SN","NE","C","Pendente"])
-    for ri, ano in enumerate(series, start=3):
-        idx = [i for i,d in enumerate(turmas) if int(d["turma"][0]) == ano]
+    for ri, serie in enumerate(series, start=3):
+        idx = [i for i,d in enumerate(turmas) if _serie_key(d["turma"]) == serie]
         sn = sum(1 for i in idx if marks_int.get(i,{}).get("status")=="SN")
         ne = sum(1 for i in idx if marks_int.get(i,{}).get("status")=="NE")
         cc = sum(1 for i in idx if marks_int.get(i,{}).get("status")=="C")
         pp = len(idx)-sn-ne-cc
-        wg[f"B{ri}"] = f"{ano}º ANO"
+        wg[f"B{ri}"] = _serie_label(serie)
         wg[f"C{ri}"] = sn; wg[f"D{ri}"] = ne
         wg[f"E{ri}"] = cc; wg[f"F{ri}"] = pp
         wg.row_dimensions[ri].height = 14

@@ -49,9 +49,48 @@ async function loadTurmas(escola) {
       marks = data.marks;
       saveMarksLocal();
     }
+    currentFilter = 'all';
+    document.querySelectorAll('.filtro-pill').forEach(p => p.classList.remove('active'));
+    const allBtn = document.querySelector('.filtro-pill[data-f="all"]');
+    if (allBtn) allBtn.classList.add('active');
+    renderSerieFilters();
     renderTable();
     updateStats();
   } catch(e) { console.error(e); }
+}
+
+// ── Filtros de série dinâmicos (escolas: 5º-9º ano | creches: GT 0-5) ──
+function renderSerieFilters() {
+  const container = document.getElementById('filtros-serie-dinamicos');
+  if (!container) return;
+
+  const series = new Set();
+  TURMAS.forEach(d => {
+    const mGt = d.turma.match(/^GT\s*(\d+)/i);
+    const mAno = d.turma.match(/^(\d+)[ºo°]\s*ANO/i);
+    if (mGt) series.add('GT' + mGt[1]);
+    else if (mAno) series.add(mAno[1]);
+  });
+
+  const sorted = Array.from(series).sort((a, b) => {
+    const na = parseInt(a.replace('GT', ''));
+    const nb = parseInt(b.replace('GT', ''));
+    return na - nb;
+  });
+
+  container.innerHTML = sorted.map(s => {
+    const label = s.startsWith('GT') ? `GT ${s.replace('GT','')}` : `${s}º Ano`;
+    return `<button class="filtro-pill" data-f="${s}">${label}</button>`;
+  }).join('');
+
+  container.querySelectorAll('.filtro-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filtro-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.f;
+      renderTable();
+    });
+  });
 }
 
 // ── Marcações (localStorage) ────────────────────────────────────
@@ -83,7 +122,11 @@ function getVisible() {
     if      (currentFilter === 'NE')   pass = m.status === 'NE';
     else if (currentFilter === 'C')    pass = m.status === 'C';
     else if (currentFilter === 'pend') pass = !m.status;
-    else if (currentFilter === 'MANHÃ' || currentFilter === 'TARDE') pass = d.turno === currentFilter;
+    else if (currentFilter === 'MANHÃ' || currentFilter === 'TARDE' || currentFilter === 'INTEGRAL') pass = d.turno === currentFilter;
+    else if (currentFilter.startsWith('GT')) {
+      const num = currentFilter.replace('GT', '');
+      pass = new RegExp('^GT\\s*' + num + '\\b', 'i').test(d.turma);
+    }
     else if (currentFilter !== 'all')  pass = d.turma.startsWith(currentFilter + 'º');
     if (!pass) return false;
     if (q) return d.turma.toLowerCase().includes(q) || d.sala.toLowerCase().includes(q);
@@ -110,7 +153,7 @@ function renderTable() {
     const i      = TURMAS.indexOf(d);
     const m      = marks[i] || {};
     const status = m.status || null;
-    const tcls   = d.turno === 'MANHÃ' ? 'turno-manha' : 'turno-tarde';
+    const tcls   = d.turno === 'MANHÃ' ? 'turno-manha' : d.turno === 'TARDE' ? 'turno-tarde' : 'turno-integral';
 
     const snCls = status === 'SN' ? 'sel-SN' : '';
     const neCls = status === 'NE' ? 'sel-NE' : '';
