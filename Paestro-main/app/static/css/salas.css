@@ -139,9 +139,9 @@ td.sala-col { font-weight: 600; color: var(--primary-color); }
   transition: all .15s;
 }
 .opt-btn:hover { border-color: #94a3b8; }
-.opt-btn.sel-SN { background: #d1fae5; color: #22e9df; border-color: #86e3ef; }
-.opt-btn.sel-NE { background: #fef9c3; color: #850e0e; border-color: #fd4747; }
-.opt-btn.sel-C  { background: #fee2e2; color: #12850e; border-color: #a5fcb4; }
+.opt-btn.sel-SN { background: #d1f4fa; color: #22e9df; border-color: #86e3ef; }
+.opt-btn.sel-NE { background: #fec3c3; color: #850e0e; border-color: #fd4747; }
+.opt-btn.sel-C  { background: #e3fee2; color: #12850e; border-color: #a5fcb4; }
 .opt-btn.clear  { font-size: .75rem; padding: .2rem .5rem; color: #94a3b8; }
 
 /* Sala real input (shown on NE) */
