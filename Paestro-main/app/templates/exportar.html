@@ -12,39 +12,98 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/exportar.css') }}">
     <link rel="icon" href="{{ url_for('static', filename='css/favicon12.png') }}" type="image/png">
-    <meta name="msapplication-TileColor" content="#ffffff">
-    <meta name="theme-color" content="#ffffff">
     <style>
-        .escola-export-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: .75rem 1rem;
-            border: 1px solid #e2e8f0;
+        .export-escola-nome {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #0a192f;
+            background: #f0fdf9;
+            border: 1px solid #86efac;
             border-radius: 8px;
-            margin-bottom: .6rem;
-            background: #f8fafc;
+            padding: .6rem 1.25rem;
+            margin-bottom: 1.5rem;
+            display: inline-block;
         }
-        .escola-export-row .escola-nome { font-weight: 500; color: #1e293b; font-size: .9rem; }
-        .escola-export-row .escola-info { font-size: .78rem; color: #94a3b8; }
-        .escola-export-actions { display: flex; gap: .4rem; }
-        .btn-export-mini {
-            padding: .35rem .75rem;
-            border-radius: 6px;
-            font-size: .78rem;
+        .export-status-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.25rem;
+            text-align: left;
+        }
+        .export-status-card h4 {
+            font-size: .9rem;
+            font-weight: 600;
+            color: #0a192f;
+            margin-bottom: .75rem;
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: .5rem;
+            margin-bottom: .75rem;
+        }
+        .status-pill {
+            text-align: center;
+            padding: .5rem;
+            border-radius: 8px;
+            font-size: .85rem;
+            font-weight: 600;
+        }
+        .pill-sn { background: #d1fae5; color: #065f46; }
+        .pill-ne { background: #fef9c3; color: #854d0e; }
+        .pill-c  { background: #fee2e2; color: #991b1b; }
+        .pill-tot{ background: #f1f5f9; color: #475569; }
+        .btn-export-drive {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .75rem 2rem;
+            background: #0a192f;
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            font-size: 1rem;
             font-weight: 500;
             cursor: pointer;
-            border: 1px solid #cbd5e1;
-            background: #fff;
-            color: #475569;
-            transition: all .15s;
+            transition: all .2s;
+            margin-top: .5rem;
         }
-        .btn-export-mini:hover { background: #e2e8f0; }
-        .btn-export-mini.xml { color: #0a192f; border-color: #0a192f; }
-        .btn-export-mini.excel { color: #166534; border-color: #86efac; }
-        #export-result { margin-top: 1rem; font-size: .875rem; text-align: left; }
-        #export-result .res-ok { color: #166534; }
-        #export-result .res-fail { color: #991b1b; }
+        .btn-export-drive:hover:not(:disabled) { background: #172a45; transform: translateY(-1px); }
+        .btn-export-drive:disabled { opacity: .5; cursor: not-allowed; }
+        .btn-download-local {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .6rem 1.5rem;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            border-radius: 20px;
+            font-size: .9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all .2s;
+            margin-top: .5rem;
+            margin-left: .5rem;
+        }
+        .btn-download-local:hover { background: #e2e8f0; }
+        #export-result {
+            margin-top: 1rem;
+            font-size: .9rem;
+            padding: .75rem 1rem;
+            border-radius: 8px;
+            display: none;
+        }
+        .result-ok   { background: #d1fae5; color: #065f46; border: 1px solid #86efac; }
+        .result-fail { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        .no-escola {
+            text-align: center;
+            color: #94a3b8;
+            padding: 2rem;
+            font-size: .9rem;
+        }
     </style>
 </head>
 <body>
@@ -77,23 +136,50 @@
 
     <main>
         <div class="export-container">
-            <h3><i class="fas fa-file-export"></i> Exportar Relatórios de Conferência</h3>
+            <h3><i class="fas fa-cloud-upload-alt"></i> Exportar para o Google Drive</h3>
 
-            <div style="text-align:left;margin-bottom:1.5rem">
-                <h4 style="font-size:1rem;margin-bottom:.75rem;color:#0a192f">Exportar por escola</h4>
-                <div id="escolas-list"></div>
+            <div id="conteudo-exportar">
+                <div class="no-escola" id="sem-escola">
+                    <i class="fas fa-info-circle" style="font-size:2rem;display:block;margin-bottom:.5rem"></i>
+                    Nenhuma escola selecionada.<br>
+                    <a href="/salas" style="color:#0a192f;font-weight:500">Volte para Salas</a> e finalize a conferência antes de exportar.
+                </div>
+
+                <div id="com-escola" style="display:none">
+                    <p style="color:#64748b;font-size:.875rem;margin-bottom:.75rem">Escola conferida:</p>
+                    <div class="export-escola-nome" id="escola-label">—</div>
+
+                    <div class="export-status-card">
+                        <h4>Resumo da conferência</h4>
+                        <div class="status-grid">
+                            <div class="status-pill pill-tot">Total: <strong id="r-total">0</strong></div>
+                            <div class="status-pill pill-sn">SN: <strong id="r-sn">0</strong></div>
+                            <div class="status-pill pill-ne">NE: <strong id="r-ne">0</strong></div>
+                            <div class="status-pill pill-c">C: <strong id="r-c">0</strong></div>
+                        </div>
+                    </div>
+
+                    <p style="font-size:.875rem;color:#64748b;margin-bottom:.5rem">
+                        O arquivo Excel com o detalhamento completo de todas as turmas será enviado diretamente
+                        para a pasta desta escola no Google Drive.
+                    </p>
+
+                    <div>
+                        <button class="btn-export-drive" id="btn-drive" onclick="exportarParaDrive()">
+                            <i class="fas fa-cloud-upload-alt"></i> Enviar Excel para o Drive
+                        </button>
+                        <button class="btn-download-local" onclick="baixarLocal()">
+                            <i class="fas fa-download"></i> Baixar localmente
+                        </button>
+                    </div>
+
+                    <div id="export-result"></div>
+                </div>
             </div>
 
-            <div style="border-top:1px solid #e2e8f0;padding-top:1.5rem;text-align:left">
-                <h4 style="font-size:1rem;margin-bottom:.5rem;color:#0a192f">Enviar tudo para o Google Drive</h4>
-                <p style="font-size:.85rem;color:#64748b;margin-bottom:1rem">
-                    Gera um XML para cada escola importada e envia para a pasta do Drive correspondente
-                    (configurada no servidor).
-                </p>
-                <button id="export-all-drive-btn" class="btn btn-action" style="background:#0a192f;color:#fff;padding:.7rem 1.5rem;border-radius:20px;border:none;cursor:pointer">
-                    <i class="fas fa-cloud-upload-alt"></i> Exportar todas as escolas para o Drive
-                </button>
-                <div id="export-result"></div>
+            <div style="margin-top:2rem;border-top:1px solid #e2e8f0;padding-top:1.5rem">
+                <h4 style="font-size:.9rem;color:#64748b;margin-bottom:.75rem">Outras escolas importadas</h4>
+                <div id="outras-escolas"></div>
             </div>
         </div>
     </main>

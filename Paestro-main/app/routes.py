@@ -363,3 +363,50 @@ def export_xml_drive():
     except Exception as e:
         logger.error(f"Erro export_xml_drive: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@main_bp.route('/api/export_excel_drive', methods=['POST'])
+def export_excel_drive():
+    """Gera o Excel de uma escola e envia para a pasta do Drive correspondente."""
+    try:
+        req    = request.json
+        escola = req.get('escola', '')
+        turmas = req.get('turmas', [])
+        marks  = req.get('marks', {})
+
+        if not escola:
+            return jsonify({'success': False, 'error': 'Escola não informada'}), 400
+
+        # Carrega do servidor se não veio no payload
+        if not turmas:
+            app_data = data_manager.load_data(get_session_file())
+            turmas   = app_data.get('salas_turmas', {}).get(escola, [])
+            marks    = app_data.get('salas_marks',  {}).get(escola, {})
+
+        buf      = gerar_relatorio_salas_xlsx(escola, turmas, marks)
+        date_str = datetime.now().strftime('%d-%m-%Y')
+        filename = f"conferencia_salas_{escola}_{date_str}.xlsx".replace(' ', '_')
+
+        # Descobre a pasta do Drive para esta escola
+        folder_map = current_app.config.get('FOLDER_MAP', {})
+        folder_id  = folder_map.get(escola) or folder_map.get(escola.upper())
+
+        if not folder_id:
+            return jsonify({
+                'success': False,
+                'error': f'Pasta do Drive não mapeada para "{escola}". Configure FOLDER_MAP em config.py.'
+            }), 400
+
+        file_id = drive_service.upload_excel_to_drive(buf.getvalue(), filename, folder_id)
+
+        if file_id in (None, 'drive-not-available'):
+            return jsonify({
+                'success': False,
+                'error': 'Falha no upload. Verifique as credenciais do Google Drive.'
+            }), 500
+
+        return jsonify({'success': True, 'file_id': file_id, 'filename': filename})
+
+    except Exception as e:
+        logger.error(f"Erro export_excel_drive: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
