@@ -13,7 +13,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/exportar.css') }}">
     <link rel="icon" href="{{ url_for('static', filename='css/favicon12.png') }}" type="image/png">
     <style>
-        /* ── Layout igual à foto ── */
         .export-container {
             max-width: 720px;
             margin: 2rem auto;
@@ -27,7 +26,7 @@
             font-size: 1.4rem;
             font-weight: 700;
             color: #1e293b;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
         .export-section-title {
             font-size: 1rem;
@@ -35,17 +34,30 @@
             color: #1e293b;
             margin-bottom: 1rem;
         }
-        /* Busca de pasta — igual à foto */
+        .escola-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            background: #f0f9ff;
+            border: 1px solid #7dd3fc;
+            color: #0369a1;
+            border-radius: 20px;
+            padding: .3rem 1rem;
+            font-size: .85rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
+        /* Campo busca pasta */
         .folder-search-wrap {
             display: flex;
             align-items: center;
             border: 1px solid #cbd5e1;
             border-radius: 8px;
             padding: .45rem .75rem;
-            margin-bottom: 1.25rem;
+            margin-bottom: .5rem;
             background: #fff;
         }
-        .folder-search-wrap i { color: #94a3b8; margin-right: .5rem; }
+        .folder-search-wrap i.fa-search { color: #94a3b8; margin-right: .5rem; }
         #folder-search {
             flex: 1;
             border: none;
@@ -54,17 +66,14 @@
             color: #1e293b;
             background: transparent;
         }
-        #folder-dropdown-arrow {
-            color: #94a3b8;
-            cursor: pointer;
-            padding: 0 .25rem;
-        }
-        .folder-list {
+        #folder-dropdown-arrow { color: #94a3b8; cursor: pointer; padding: 0 .25rem; }
+        /* Dropdown lista */
+        #folder-list {
             border: 1px solid #e2e8f0;
             border-radius: 8px;
             max-height: 200px;
             overflow-y: auto;
-            margin-bottom: 1.25rem;
+            margin-bottom: .75rem;
             display: none;
             text-align: left;
         }
@@ -80,8 +89,70 @@
         }
         .folder-item:hover { background: #f1f5f9; }
         .folder-item.selected { background: #e0f2fe; color: #0369a1; font-weight: 500; }
-        .folder-item i { color: #f59e0b; font-size: .9rem; }
-        /* Botão Salvar no Drive — azul como na foto */
+        .folder-item i { color: #f59e0b; }
+        /* Status box */
+        #folder-status { margin-bottom: .75rem; display: none; }
+        .status-info {
+            background: #eff6ff;
+            border: 1px solid #93c5fd;
+            color: #1d4ed8;
+            border-radius: 8px;
+            padding: .6rem .9rem;
+            font-size: .82rem;
+            text-align: left;
+        }
+        .status-info a { color: #1d4ed8; font-weight: 600; }
+        .status-warn {
+            background: #fef9c3;
+            border: 1px solid #fde047;
+            color: #854d0e;
+            border-radius: 8px;
+            padding: .6rem .9rem;
+            font-size: .82rem;
+            text-align: left;
+        }
+        /* Pasta selecionada */
+        #pasta-selecionada {
+            display: none;
+            text-align: left;
+            margin-bottom: .75rem;
+            font-size: .82rem;
+            color: #065f46;
+            background: #d1fae5;
+            border: 1px solid #86efac;
+            border-radius: 6px;
+            padding: .4rem .8rem;
+        }
+        /* Box de ajuda */
+        #ajuda-box {
+            display: none;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: .75rem;
+            text-align: left;
+            font-size: .82rem;
+            color: #475569;
+            line-height: 1.7;
+        }
+        #ajuda-box strong { color: #0f172a; }
+        #ajuda-box code {
+            background: #e2e8f0;
+            padding: .1rem .35rem;
+            border-radius: 4px;
+            font-size: .8rem;
+            word-break: break-all;
+        }
+        /* Hint ID manual */
+        .hint-id {
+            font-size: .78rem;
+            color: #94a3b8;
+            text-align: left;
+            margin-bottom: 1rem;
+        }
+        .hint-id a { color: #2563eb; }
+        /* Botões */
         .btn-drive {
             display: inline-flex;
             align-items: center;
@@ -101,7 +172,6 @@
         }
         .btn-drive:hover:not(:disabled) { background: #1d4ed8; }
         .btn-drive:disabled { opacity: .5; cursor: not-allowed; }
-        /* Divisor "ou" */
         .divider {
             display: flex;
             align-items: center;
@@ -116,7 +186,6 @@
             height: 1px;
             background: #e2e8f0;
         }
-        /* Botão Baixar Excel — verde como na foto */
         .btn-excel {
             display: inline-flex;
             align-items: center;
@@ -134,21 +203,6 @@
             width: 100%;
         }
         .btn-excel:hover { background: #15803d; }
-        /* Escola badge */
-        .escola-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: .4rem;
-            background: #f0f9ff;
-            border: 1px solid #7dd3fc;
-            color: #0369a1;
-            border-radius: 20px;
-            padding: .3rem 1rem;
-            font-size: .85rem;
-            font-weight: 500;
-            margin-bottom: 1.5rem;
-        }
-        /* Resultado */
         #export-result {
             margin-top: 1rem;
             padding: .75rem 1rem;
@@ -158,7 +212,7 @@
         }
         .result-ok   { background: #d1fae5; color: #065f46; border: 1px solid #86efac; }
         .result-fail { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
-        .loading-spin { animation: spin .8s linear infinite; }
+        .loading-spin { animation: spin .8s linear infinite; display: inline-block; }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
@@ -194,27 +248,49 @@
         <div class="export-container">
             <h3>Exportar Conferência de Salas</h3>
 
-            <!-- Escola selecionada (vinda da tela Salas) -->
-            <div id="escola-wrap" style="display:none;margin-bottom:.5rem">
+            <!-- Escola -->
+            <div id="escola-wrap" style="display:none;margin-bottom:.25rem">
                 <div class="escola-badge">
                     <i class="fas fa-school"></i>
                     <span id="escola-label">—</span>
                 </div>
             </div>
 
-            <!-- SEÇÃO: Salvar no Drive -->
+            <!-- DRIVE -->
             <p class="export-section-title">Salvar conferência no Google Drive</p>
 
+            <!-- Status / aviso -->
+            <div id="folder-status"></div>
+
+            <!-- Busca de pasta -->
             <div class="folder-search-wrap">
                 <i class="fas fa-search"></i>
-                <input type="text" id="folder-search" placeholder="Buscar pasta..." autocomplete="off" oninput="filtrarPastas()"/>
+                <input type="text" id="folder-search" placeholder="Buscar pasta ou colar ID do Drive…" autocomplete="off"/>
                 <i class="fas fa-chevron-down" id="folder-dropdown-arrow" onclick="toggleDropdown()"></i>
             </div>
 
-            <div class="folder-list" id="folder-list"></div>
+            <!-- Dica ID manual -->
+            <div class="hint-id">
+                Sem pastas? Cole o ID da pasta diretamente no campo acima.<br>
+                O ID está na URL do Drive: drive.google.com/drive/folders/<strong>ID_AQUI</strong>
+            </div>
 
-            <div id="pasta-selecionada" style="display:none;text-align:left;margin-bottom:.75rem;font-size:.82rem;color:#0369a1">
-                <i class="fas fa-folder-open"></i> Pasta: <strong id="pasta-nome-label"></strong>
+            <!-- Lista dropdown -->
+            <div id="folder-list"></div>
+
+            <!-- Pasta selecionada -->
+            <div id="pasta-selecionada">
+                <i class="fas fa-folder-open"></i> Pasta selecionada: <strong id="pasta-nome-label"></strong>
+            </div>
+
+            <!-- Box de ajuda (como compartilhar) -->
+            <div id="ajuda-box">
+                <strong>Como fazer a pasta aparecer aqui:</strong><br>
+                1. Abra a pasta no Google Drive<br>
+                2. Botão direito → <strong>Compartilhar</strong><br>
+                3. Cole o email: <code>verificapaestro@verifica-501210.iam.gserviceaccount.com</code><br>
+                4. Permissão: <strong>Editor</strong> → Enviar<br>
+                5. Recarregue esta página
             </div>
 
             <button class="btn-drive" id="btn-drive" onclick="salvarNoDrive()">
@@ -226,9 +302,8 @@
             <!-- Divisor -->
             <div class="divider">ou</div>
 
-            <!-- SEÇÃO: Baixar no dispositivo -->
+            <!-- DOWNLOAD LOCAL -->
             <p class="export-section-title">Baixar conferência no dispositivo</p>
-
             <button class="btn-excel" onclick="baixarExcel()">
                 <i class="fas fa-file-excel"></i> Baixar Excel
             </button>
