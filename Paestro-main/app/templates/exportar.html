@@ -12,39 +12,154 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/exportar.css') }}">
     <link rel="icon" href="{{ url_for('static', filename='css/favicon12.png') }}" type="image/png">
-    <meta name="msapplication-TileColor" content="#ffffff">
-    <meta name="theme-color" content="#ffffff">
     <style>
-        .escola-export-row {
+        /* ── Layout igual à foto ── */
+        .export-container {
+            max-width: 720px;
+            margin: 2rem auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08);
+            padding: 2.5rem 2rem;
+            text-align: center;
+        }
+        .export-container h3 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 2rem;
+        }
+        .export-section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+        /* Busca de pasta — igual à foto */
+        .folder-search-wrap {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: .75rem 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: .45rem .75rem;
+            margin-bottom: 1.25rem;
+            background: #fff;
+        }
+        .folder-search-wrap i { color: #94a3b8; margin-right: .5rem; }
+        #folder-search {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: .9rem;
+            color: #1e293b;
+            background: transparent;
+        }
+        #folder-dropdown-arrow {
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 0 .25rem;
+        }
+        .folder-list {
             border: 1px solid #e2e8f0;
             border-radius: 8px;
-            margin-bottom: .6rem;
-            background: #f8fafc;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 1.25rem;
+            display: none;
+            text-align: left;
         }
-        .escola-export-row .escola-nome { font-weight: 500; color: #1e293b; font-size: .9rem; }
-        .escola-export-row .escola-info { font-size: .78rem; color: #94a3b8; }
-        .escola-export-actions { display: flex; gap: .4rem; }
-        .btn-export-mini {
-            padding: .35rem .75rem;
-            border-radius: 6px;
-            font-size: .78rem;
+        .folder-item {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .55rem .9rem;
+            cursor: pointer;
+            font-size: .875rem;
+            color: #1e293b;
+            transition: background .1s;
+        }
+        .folder-item:hover { background: #f1f5f9; }
+        .folder-item.selected { background: #e0f2fe; color: #0369a1; font-weight: 500; }
+        .folder-item i { color: #f59e0b; font-size: .9rem; }
+        /* Botão Salvar no Drive — azul como na foto */
+        .btn-drive {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+            padding: .7rem 2.5rem;
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
             font-weight: 500;
             cursor: pointer;
-            border: 1px solid #cbd5e1;
-            background: #fff;
-            color: #475569;
-            transition: all .15s;
+            transition: background .2s;
+            width: 100%;
+            margin-bottom: 1.25rem;
         }
-        .btn-export-mini:hover { background: #e2e8f0; }
-        .btn-export-mini.xml { color: #0a192f; border-color: #0a192f; }
-        .btn-export-mini.excel { color: #166534; border-color: #86efac; }
-        #export-result { margin-top: 1rem; font-size: .875rem; text-align: left; }
-        #export-result .res-ok { color: #166534; }
-        #export-result .res-fail { color: #991b1b; }
+        .btn-drive:hover:not(:disabled) { background: #1d4ed8; }
+        .btn-drive:disabled { opacity: .5; cursor: not-allowed; }
+        /* Divisor "ou" */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            color: #94a3b8;
+            font-size: .85rem;
+            margin: 1.5rem 0;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e2e8f0;
+        }
+        /* Botão Baixar Excel — verde como na foto */
+        .btn-excel {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+            padding: .7rem 2.5rem;
+            background: #16a34a;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background .2s;
+            width: 100%;
+        }
+        .btn-excel:hover { background: #15803d; }
+        /* Escola badge */
+        .escola-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            background: #f0f9ff;
+            border: 1px solid #7dd3fc;
+            color: #0369a1;
+            border-radius: 20px;
+            padding: .3rem 1rem;
+            font-size: .85rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
+        /* Resultado */
+        #export-result {
+            margin-top: 1rem;
+            padding: .75rem 1rem;
+            border-radius: 8px;
+            font-size: .875rem;
+            display: none;
+        }
+        .result-ok   { background: #d1fae5; color: #065f46; border: 1px solid #86efac; }
+        .result-fail { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        .loading-spin { animation: spin .8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -77,24 +192,46 @@
 
     <main>
         <div class="export-container">
-            <h3><i class="fas fa-file-export"></i> Exportar Relatórios de Conferência</h3>
+            <h3>Exportar Conferência de Salas</h3>
 
-            <div style="text-align:left;margin-bottom:1.5rem">
-                <h4 style="font-size:1rem;margin-bottom:.75rem;color:#0a192f">Exportar por escola</h4>
-                <div id="escolas-list"></div>
+            <!-- Escola selecionada (vinda da tela Salas) -->
+            <div id="escola-wrap" style="display:none;margin-bottom:.5rem">
+                <div class="escola-badge">
+                    <i class="fas fa-school"></i>
+                    <span id="escola-label">—</span>
+                </div>
             </div>
 
-            <div style="border-top:1px solid #e2e8f0;padding-top:1.5rem;text-align:left">
-                <h4 style="font-size:1rem;margin-bottom:.5rem;color:#0a192f">Enviar tudo para o Google Drive</h4>
-                <p style="font-size:.85rem;color:#64748b;margin-bottom:1rem">
-                    Gera um XML para cada escola importada e envia para a pasta do Drive correspondente
-                    (configurada no servidor).
-                </p>
-                <button id="export-all-drive-btn" class="btn btn-action" style="background:#0a192f;color:#fff;padding:.7rem 1.5rem;border-radius:20px;border:none;cursor:pointer">
-                    <i class="fas fa-cloud-upload-alt"></i> Exportar todas as escolas para o Drive
-                </button>
-                <div id="export-result"></div>
+            <!-- SEÇÃO: Salvar no Drive -->
+            <p class="export-section-title">Salvar conferência no Google Drive</p>
+
+            <div class="folder-search-wrap">
+                <i class="fas fa-search"></i>
+                <input type="text" id="folder-search" placeholder="Buscar pasta..." autocomplete="off" oninput="filtrarPastas()"/>
+                <i class="fas fa-chevron-down" id="folder-dropdown-arrow" onclick="toggleDropdown()"></i>
             </div>
+
+            <div class="folder-list" id="folder-list"></div>
+
+            <div id="pasta-selecionada" style="display:none;text-align:left;margin-bottom:.75rem;font-size:.82rem;color:#0369a1">
+                <i class="fas fa-folder-open"></i> Pasta: <strong id="pasta-nome-label"></strong>
+            </div>
+
+            <button class="btn-drive" id="btn-drive" onclick="salvarNoDrive()">
+                <i class="fas fa-cloud-upload-alt"></i> Salvar no Drive
+            </button>
+
+            <div id="export-result"></div>
+
+            <!-- Divisor -->
+            <div class="divider">ou</div>
+
+            <!-- SEÇÃO: Baixar no dispositivo -->
+            <p class="export-section-title">Baixar conferência no dispositivo</p>
+
+            <button class="btn-excel" onclick="baixarExcel()">
+                <i class="fas fa-file-excel"></i> Baixar Excel
+            </button>
         </div>
     </main>
 

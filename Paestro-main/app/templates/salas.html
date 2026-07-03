@@ -12,8 +12,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/salas.css') }}">
     <link rel="icon" href="{{ url_for('static', filename='css/favicon12.png') }}" type="image/png">
-    <meta name="msapplication-TileColor" content="#ffffff">
-    <meta name="theme-color" content="#ffffff">
 </head>
 <body>
 
@@ -70,11 +68,11 @@
         </div>
         <div class="stat-card stat-sn">
             <div class="stat-num" id="s-sn">0</div>
-            <div class="stat-label">SN — Sem Número</div>
+            <div class="stat-label">SN — Sem necessidade</div>
         </div>
         <div class="stat-card stat-ne">
             <div class="stat-num" id="s-ne">0</div>
-            <div class="stat-label">NE — Número Errado</div>
+            <div class="stat-label">NE — Número errado</div>
         </div>
         <div class="stat-card stat-c">
             <div class="stat-num" id="s-c">0</div>
@@ -92,20 +90,9 @@
         <progress id="prog-bar" value="0" max="1"></progress>
     </div>
 
-    <!-- Filtros por série / turno -->
+    <!-- Apenas busca -->
     <div class="salas-filtros">
-        <button class="filtro-pill active" data-f="all">Todos</button>
-        <button class="filtro-pill" data-f="5">5º Ano</button>
-        <button class="filtro-pill" data-f="6">6º Ano</button>
-        <button class="filtro-pill" data-f="7">7º Ano</button>
-        <button class="filtro-pill" data-f="8">8º Ano</button>
-        <button class="filtro-pill" data-f="9">9º Ano</button>
-        <button class="filtro-pill" data-f="MANHÃ">Manhã</button>
-        <button class="filtro-pill" data-f="TARDE">Tarde</button>
-        <button class="filtro-pill" data-f="NE">Só NE</button>
-        <button class="filtro-pill" data-f="C">Só C</button>
-        <button class="filtro-pill" data-f="pend">Pendentes</button>
-        <input type="text" id="salas-search" class="salas-search" placeholder="Buscar turma ou sala…"/>
+        <input type="text" id="salas-search" class="salas-search" style="width:100%;max-width:340px" placeholder="Buscar turma ou sala…"/>
     </div>
 
     <!-- Tabela -->
@@ -123,7 +110,7 @@
             </thead>
             <tbody id="salas-tbody"></tbody>
         </table>
-        <div id="salas-empty" class="salas-empty" style="display:none">
+        <div id="salas-empty" class="salas-empty">
             <i class="fas fa-inbox" style="font-size:2rem;margin-bottom:.5rem;display:block"></i>
             Selecione uma escola para carregar as turmas.
         </div>
@@ -138,11 +125,13 @@
             <i class="fas fa-save"></i> Salvar marcações
         </button>
         <button id="exportar-salas-btn" class="btn-salas btn-salas-green">
-            <i class="fas fa-file-excel"></i> Exportar Excel
+            <i class="fas fa-cloud-upload-alt"></i> Exportar para Drive
         </button>
-        <button id="exportar-salas-xml-btn" class="btn-salas btn-salas-primary">
-            <i class="fas fa-file-code"></i> Exportar XML
-        </button>
+    </div>
+
+    <!-- Aviso pendentes -->
+    <div id="aviso-pendentes" style="display:none;margin-top:.75rem;text-align:center;color:#854d0e;background:#fef9c3;border:1px solid #fde047;border-radius:8px;padding:.6rem 1rem;font-size:.875rem">
+        ⚠️ Ainda há <strong id="aviso-pend-num">0</strong> turma(s) pendente(s). Verifique todas antes de exportar.
     </div>
 </div>
 </main>
@@ -154,7 +143,6 @@
 <script src="{{ url_for('static', filename='js/modal.js') }}"></script>
 <script src="{{ url_for('static', filename='js/salas.js') }}"></script>
 <script>
-    // Header padrão do Paestro
     (async () => {
         try {
             const r = await fetch('/api/get_current_user');

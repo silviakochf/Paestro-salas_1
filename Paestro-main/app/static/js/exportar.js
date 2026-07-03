@@ -1,41 +1,41 @@
 /**
  * exportar.js
- * Recebe a escola via sessionStorage (enviada por salas.js),
- * carrega o resumo e permite enviar o Excel direto para o Drive.
+ * Tela de exportar: busca pasta no Drive, salva Excel, ou baixa localmente.
+ * A escola vem via sessionStorage (enviada por salas.js ao clicar Exportar).
  */
 
-let escolaExportar = '';
-let turmasExportar = [];
-let marksExportar  = {};
+let escolaExportar  = '';
+let turmasExportar  = [];
+let marksExportar   = {};
+let allFolders      = [];   // pastas carregadas do Drive
+let pastaIdSelecionada   = '';
+let pastaNomeSelecionada = '';
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Header
     try {
         const r = await fetch('/api/get_current_user');
         const d = await r.json();
-        document.getElementById('nome-usuario').textContent  = d.username || '';
-        document.getElementById('periodo-usuario').textContent = d.periodo || '';
+        document.getElementById('nome-usuario').textContent   = d.username || '';
+        document.getElementById('periodo-usuario').textContent = d.periodo  || '';
     } catch(e) {}
     document.getElementById('data-atual').textContent =
         new Date().toLocaleDateString('pt-BR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
 
-    // Escola vinda da tela de salas
+    // Escola vinda de salas.js
     escolaExportar = sessionStorage.getItem('exportar_escola') || '';
-
-    await carregarEscola(escolaExportar);
-    await carregarOutrasEscolas(escolaExportar);
-});
-
-async function carregarEscola(escola) {
-    const semEscolaEl = document.getElementById('sem-escola');
-    const comEscolaEl = document.getElementById('com-escola');
-
-    if (!escola) {
-        semEscolaEl.style.display = '';
-        comEscolaEl.style.display = 'none';
-        return;
+    if (escolaExportar) {
+        document.getElementById('escola-wrap').style.display = '';
+        document.getElementById('escola-label').textContent  = escolaExportar;
+        await carregarDadosEscola(escolaExportar);
     }
 
+    // Carrega pastas do Drive
+    await carregarPastas();
+});
+
+// ── Dados da escola ──────────────────────────────────────────────
+async function carregarDadosEscola(escola) {
     try {
         const res  = await fetch('/api/get_salas_turmas', {
             method: 'POST',
@@ -45,102 +45,116 @@ async function carregarEscola(escola) {
         const data = await res.json();
         turmasExportar = data.turmas || [];
         marksExportar  = data.marks  || {};
-
-        const sn    = Object.values(marksExportar).filter(m => m.status === 'SN').length;
-        const ne    = Object.values(marksExportar).filter(m => m.status === 'NE').length;
-        const c     = Object.values(marksExportar).filter(m => m.status === 'C').length;
-        const total = turmasExportar.length;
-
-        document.getElementById('escola-label').textContent = escola;
-        document.getElementById('r-total').textContent = total;
-        document.getElementById('r-sn').textContent    = sn;
-        document.getElementById('r-ne').textContent    = ne;
-        document.getElementById('r-c').textContent     = c;
-
-        semEscolaEl.style.display = 'none';
-        comEscolaEl.style.display = '';
-    } catch(e) {
-        console.error(e);
-    }
-}
-
-async function carregarOutrasEscolas(escolaAtual) {
-    try {
-        const res    = await fetch('/api/get_schools');
-        const data   = await res.json();
-        const outras = (data.schools || []).filter(e => e !== escolaAtual);
-        const el     = document.getElementById('outras-escolas');
-
-        if (!outras.length) {
-            el.innerHTML = '<p style="color:#94a3b8;font-size:.85rem">Nenhuma outra escola importada.</p>';
-            return;
-        }
-
-        el.innerHTML = outras.map(escola => `
-            <div style="display:flex;align-items:center;justify-content:space-between;
-                        padding:.6rem 1rem;border:1px solid #e2e8f0;border-radius:8px;
-                        margin-bottom:.5rem;background:#f8fafc">
-                <span style="font-size:.875rem;font-weight:500;color:#1e293b">${escola}</span>
-                <div style="display:flex;gap:.4rem">
-                    <button onclick="selecionarEscola('${escola}')"
-                        style="padding:.3rem .8rem;border-radius:6px;font-size:.78rem;
-                               border:1px solid #0a192f;background:#0a192f;color:#fff;cursor:pointer">
-                        <i class="fas fa-cloud-upload-alt"></i> Exportar esta
-                    </button>
-                </div>
-            </div>
-        `).join('');
     } catch(e) { console.error(e); }
 }
 
-function selecionarEscola(escola) {
-    sessionStorage.setItem('exportar_escola', escola);
-    window.location.reload();
+// ── Pastas do Drive ──────────────────────────────────────────────
+async function carregarPastas() {
+    try {
+        const res  = await fetch('/api/list_drive_folders');
+        const data = await res.json();
+        allFolders = data.folders || [];
+
+        // Se não houver subpastas, usa a pasta padrão como única opção
+        if (!allFolders.length && data.default_folder_id) {
+            allFolders = [{id: data.default_folder_id, name: 'Pasta principal (Secretaria)'}];
+        }
+
+        renderFolderList(allFolders);
+    } catch(e) {
+        console.error('Erro ao carregar pastas:', e);
+        allFolders = [];
+    }
 }
 
-// ── Enviar para o Drive ──────────────────────────────────────────
-async function exportarParaDrive() {
-    const btn       = document.getElementById('btn-drive');
-    const resultEl  = document.getElementById('export-result');
+function renderFolderList(folders) {
+    const list = document.getElementById('folder-list');
+    if (!folders.length) {
+        list.innerHTML = '<div class="folder-item" style="color:#94a3b8">Nenhuma pasta encontrada</div>';
+        return;
+    }
+    list.innerHTML = folders.map(f => `
+        <div class="folder-item ${f.id === pastaIdSelecionada ? 'selected' : ''}"
+             onclick="selecionarPasta('${f.id}', '${f.name.replace(/'/g,"\\'")}')">
+            <i class="fas fa-folder"></i> ${f.name}
+        </div>
+    `).join('');
+}
 
-    btn.disabled     = true;
-    btn.innerHTML    = '<i class="fas fa-spinner fa-spin"></i> Enviando…';
-    resultEl.style.display = 'none';
+function filtrarPastas() {
+    const q = document.getElementById('folder-search').value.toLowerCase();
+    const filtered = allFolders.filter(f => f.name.toLowerCase().includes(q));
+    renderFolderList(filtered);
+    document.getElementById('folder-list').style.display = '';
+}
+
+function toggleDropdown() {
+    const list = document.getElementById('folder-list');
+    renderFolderList(allFolders);
+    list.style.display = list.style.display === 'none' || !list.style.display ? '' : 'none';
+}
+
+function selecionarPasta(id, nome) {
+    pastaIdSelecionada   = id;
+    pastaNomeSelecionada = nome;
+
+    document.getElementById('folder-search').value = nome;
+    document.getElementById('folder-list').style.display = 'none';
+
+    document.getElementById('pasta-selecionada').style.display  = '';
+    document.getElementById('pasta-nome-label').textContent = nome;
+
+    // Re-renderiza com item marcado
+    renderFolderList(allFolders);
+}
+
+// Fecha dropdown ao clicar fora
+document.addEventListener('click', e => {
+    if (!e.target.closest('.folder-search-wrap') && !e.target.closest('.folder-list')) {
+        document.getElementById('folder-list').style.display = 'none';
+    }
+});
+
+// ── Salvar no Drive ──────────────────────────────────────────────
+async function salvarNoDrive() {
+    if (!pastaIdSelecionada) {
+        mostrarResultado('❌ Selecione uma pasta do Drive primeiro.', false);
+        return;
+    }
+
+    const btn = document.getElementById('btn-drive');
+    btn.disabled  = true;
+    btn.innerHTML = '<i class="fas fa-circle-notch loading-spin"></i> Enviando…';
 
     try {
         const res = await fetch('/api/export_excel_drive', {
             method: 'POST',
             headers: {'Content-Type':'application/json'},
             body: JSON.stringify({
-                escola: escolaExportar,
-                turmas: turmasExportar,
-                marks:  marksExportar
+                escola:    escolaExportar,
+                folder_id: pastaIdSelecionada,
+                turmas:    turmasExportar,
+                marks:     marksExportar
             })
         });
         const data = await res.json();
 
-        resultEl.style.display = '';
         if (data.success) {
-            resultEl.className = 'result-ok';
-            resultEl.innerHTML = `<i class="fas fa-check-circle"></i> Excel enviado com sucesso para o Drive!
-                ${data.file_id ? `<br><small>ID do arquivo: ${data.file_id}</small>` : ''}`;
+            mostrarResultado('✅ Excel salvo no Drive com sucesso!', true);
         } else {
-            resultEl.className = 'result-fail';
-            resultEl.innerHTML = `<i class="fas fa-times-circle"></i> Erro: ${data.error || 'Falha no envio'}`;
+            mostrarResultado('❌ Erro: ' + (data.error || 'Falha no envio'), false);
         }
     } catch(e) {
-        resultEl.style.display = '';
-        resultEl.className = 'result-fail';
-        resultEl.innerHTML = '<i class="fas fa-times-circle"></i> Erro de conexão ao enviar.';
+        mostrarResultado('❌ Erro de conexão ao enviar.', false);
         console.error(e);
     } finally {
         btn.disabled  = false;
-        btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Enviar Excel para o Drive';
+        btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Salvar no Drive';
     }
 }
 
-// ── Baixar localmente ────────────────────────────────────────────
-async function baixarLocal() {
+// ── Baixar Excel localmente ──────────────────────────────────────
+async function baixarExcel() {
     try {
         const res = await fetch('/api/exportar_relatorio_salas', {
             method: 'POST',
@@ -157,13 +171,23 @@ async function baixarLocal() {
         const blob = await res.blob();
         const url  = URL.createObjectURL(blob);
         const a    = document.createElement('a');
-        const date = new Date().toISOString().slice(0, 10);
+        const date = new Date().toISOString().slice(0,10);
+        const nome = escolaExportar || 'conferencia_salas';
         a.href     = url;
-        a.download = `conferencia_salas_${escolaExportar}_${date}.xlsx`.replace(/\s+/g, '_');
+        a.download = `conferencia_salas_${nome}_${date}.xlsx`.replace(/\s+/g,'_');
         a.click();
         URL.revokeObjectURL(url);
     } catch(e) {
+        alert('Erro ao baixar o arquivo: ' + e.message);
         console.error(e);
-        alert('Erro ao baixar o arquivo.');
     }
+}
+
+// ── Resultado ─────────────────────────────────────────────────────
+function mostrarResultado(msg, ok) {
+    const el = document.getElementById('export-result');
+    el.textContent  = msg;
+    el.className    = ok ? 'result-ok' : 'result-fail';
+    el.style.display = '';
+    setTimeout(() => { el.style.display = 'none'; }, 5000);
 }
