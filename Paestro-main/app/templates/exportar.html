@@ -210,24 +210,25 @@
             <p class="export-section-title">Salvar conferência no Google Drive</p>
 
             <!-- Campo busca pasta -->
-            <div class="folder-search-wrap">
-    <i class="fas fa-search"></i>
+          <div class="folder-search-container">
 
-    <input
-        type="text"
-        id="folder-search"
-        placeholder="Buscar pasta..."
-    />
+    <div class="folder-search-wrap">
+        <i class="fas fa-search"></i>
 
-    <i
-        class="fas fa-chevron-down"
-        id="folder-dropdown-arrow"
-        onclick="toggleDropdown()"
-    ></i>
+        <input
+            type="text"
+            id="folder-search"
+            placeholder="Buscar pasta..."
+        />
+
+        <i class="fas fa-chevron-down"
+           id="folder-dropdown-arrow"
+           onclick="toggleDropdown()"></i>
+    </div>
 
     <div id="folder-list"></div>
-</div>
 
+</div>
             <!-- Botão Drive -->
             <button class="btn-drive" id="btn-drive" onclick="salvarNoDrive()">
                 <i class="fas fa-cloud-upload-alt"></i> Salvar no Drive

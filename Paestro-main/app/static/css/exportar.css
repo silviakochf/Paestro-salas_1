@@ -339,29 +339,36 @@
   display: block;
   margin: 0 auto;
 }
-.folder-search-wrap {
-    position: relative;
-    width: 100%;
+.folder-search-container{
+    position:relative;
+    width:100%;
 }
 
-#folder-list {
-    position: absolute;
-    top: calc(100% + 4px);
-    left: 0;
-    right: 0;
+.folder-search-wrap{
+    display:flex;
+    align-items:center;
+    border:1px solid #cbd5e1;
+    border-radius:8px;
+    padding:.5rem .85rem;
+    background:#fff;
+}
 
-    background: white;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
+#folder-list{
+    position:absolute;
+    top:100%;
+    left:0;
+    right:0;
 
-    max-height: 250px;
-    overflow-y: auto;
+    background:#fff;
+    border:1px solid #cbd5e1;
+    border-radius:8px;
 
-    box-shadow: 0 8px 20px rgba(0,0,0,.15);
+    max-height:220px;
+    overflow-y:auto;
 
-    z-index: 9999;
+    display:none;
 
-    display: none;
+    z-index:99999;
 }
 
 .folder-item {
