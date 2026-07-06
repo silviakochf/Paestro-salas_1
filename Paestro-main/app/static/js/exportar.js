@@ -50,7 +50,6 @@ async function carregarPastas() {
         const data = await res.json();
         allFolders = data.folders || [];
 
-        // Registra eventos DEPOIS que as pastas carregaram
         const input = document.getElementById('folder-search');
         input.addEventListener('focus', () => renderDropdown(allFolders));
         input.addEventListener('input', filtrarPastas);
@@ -81,15 +80,13 @@ function filtrarPastas() {
 function renderDropdown(folders) {
     const list = document.getElementById('folder-list');
     if (!folders.length) {
-        list.innerHTML = `<div style="padding:.75rem 1rem;color:#94a3b8;font-size:.875rem">
-            Nenhuma pasta encontrada</div>`;
+        list.innerHTML = '<div style="padding:.75rem 1rem;color:#94a3b8;font-size:.875rem">Nenhuma pasta encontrada</div>';
     } else {
-        list.innerHTML = folders.map(f => `
-            <div class="folder-item ${f.id === pastaIdSelecionada ? 'selected' : ''}"
-                 onclick="selecionarPasta('${f.id}', '${f.name.replace(/'/g,"\\'")}')">
-                ${f.name}
-            </div>
-        `).join('');
+        list.innerHTML = folders.map(f => {
+            const sel = f.id === pastaIdSelecionada ? 'selected' : '';
+            const nome = f.name.replace(/'/g, "\\'");
+            return '<div class="folder-item ' + sel + '" onclick="selecionarPasta(\'' + f.id + '\', \'' + nome + '\')">' + f.name + '</div>';
+        }).join('');
     }
     list.style.display = '';
 }
@@ -110,13 +107,13 @@ document.addEventListener('click', e => {
 
 async function salvarNoDrive() {
     if (!pastaIdSelecionada) {
-        mostrarResultado('⚠️ Selecione uma pasta antes de salvar.', false);
+        mostrarResultado('Selecione uma pasta antes de salvar.', false);
         return;
     }
 
     const btn = document.getElementById('btn-drive');
     btn.disabled  = true;
-    btn.innerHTML = '<i class="fas fa-circle-notch" style="animation:spin .8s linear infinite;display:inline-block"></i> Enviando…';
+    btn.innerHTML = 'Enviando...';
 
     try {
         const res = await fetch('/api/export_excel_drive', {
@@ -131,15 +128,15 @@ async function salvarNoDrive() {
         });
         const data = await res.json();
         if (data.success) {
-            mostrarResultado('✅ Excel salvo no Drive com sucesso!', true);
+            mostrarResultado('Excel salvo no Drive com sucesso!', true);
         } else {
-            mostrarResultado('❌ ' + (data.error || 'Falha no envio'), false);
+            mostrarResultado('Erro: ' + (data.error || 'Falha no envio'), false);
         }
     } catch(e) {
-        mostrarResultado('❌ Erro de conexão ao enviar.', false);
+        mostrarResultado('Erro de conexao ao enviar.', false);
     } finally {
         btn.disabled  = false;
-        btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Salvar no Drive';
+        btn.innerHTML = 'Salvar no Drive';
     }
 }
 
@@ -160,7 +157,7 @@ async function baixarExcel() {
         const a    = document.createElement('a');
         const date = new Date().toISOString().slice(0,10);
         a.href     = url;
-        a.download = `conferencia_salas_${escolaExportar || 'salas'}_${date}.xlsx`.replace(/\s+/g,'_');
+        a.download = ('conferencia_salas_' + (escolaExportar || 'salas') + '_' + date + '.xlsx').replace(/\s+/g,'_');
         a.click();
         URL.revokeObjectURL(url);
     } catch(e) {
@@ -173,5 +170,5 @@ function mostrarResultado(msg, ok) {
     el.textContent   = msg;
     el.className     = ok ? 'result-ok' : 'result-fail';
     el.style.display = '';
-    if (ok) setTimeout(() => { el.style.display = 'none'; }, 6000);
+    if (ok) setTimeout(function() { el.style.display = 'none'; }, 6000);
 }
