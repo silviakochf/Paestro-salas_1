@@ -211,13 +211,22 @@
 
             <!-- Campo busca pasta -->
             <div class="folder-search-wrap">
-                <i class="fas fa-search"></i>
-                <input type="text" id="folder-search" placeholder="Buscar pasta..."/>
-                <i class="fas fa-chevron-down" id="folder-dropdown-arrow" onclick="toggleDropdown()"></i>
-            </div>
+    <i class="fas fa-search"></i>
 
-            <!-- Lista de pastas -->
-            <div id="folder-list"></div>
+    <input
+        type="text"
+        id="folder-search"
+        placeholder="Buscar pasta..."
+    />
+
+    <i
+        class="fas fa-chevron-down"
+        id="folder-dropdown-arrow"
+        onclick="toggleDropdown()"
+    ></i>
+
+    <div id="folder-list"></div>
+</div>
 
             <!-- Botão Drive -->
             <button class="btn-drive" id="btn-drive" onclick="salvarNoDrive()">
