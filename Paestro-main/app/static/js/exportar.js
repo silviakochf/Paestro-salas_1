@@ -10,7 +10,6 @@ let pastaIdSelecionada   = '';
 let pastaNomeSelecionada = '';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Header
     try {
         const r = await fetch('/api/get_current_user');
         const d = await r.json();
@@ -22,7 +21,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             weekday:'long', day:'numeric', month:'long', year:'numeric'
         });
 
-    // Escola vinda de salas.js via sessionStorage
     escolaExportar = sessionStorage.getItem('exportar_escola') || '';
     if (escolaExportar) {
         document.getElementById('escola-wrap').style.display = '';
@@ -31,13 +29,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     await carregarPastas();
-
-    // Busca/filtro no campo
-    document.getElementById('folder-search').addEventListener('input', filtrarPastas);
-    document.getElementById('folder-search').addEventListener('focus', abrirDropdown);
 });
 
-// ── Dados da escola ──────────────────────────────────────────────
 async function carregarDadosEscola(escola) {
     try {
         const res  = await fetch('/api/get_salas_turmas', {
@@ -51,22 +44,21 @@ async function carregarDadosEscola(escola) {
     } catch(e) { console.error(e); }
 }
 
-// ── Pastas do FOLDER_MAP ─────────────────────────────────────────
 async function carregarPastas() {
     try {
         const res  = await fetch('/api/list_drive_folders');
         const data = await res.json();
         allFolders = data.folders || [];
-        // Não abre o dropdown ainda — só carrega
+
+        // Registra eventos DEPOIS que as pastas carregaram
+        const input = document.getElementById('folder-search');
+        input.addEventListener('focus', () => renderDropdown(allFolders));
+        input.addEventListener('input', filtrarPastas);
+
     } catch(e) {
         console.error('Erro ao carregar pastas:', e);
         allFolders = [];
     }
-}
-
-// ── Dropdown ─────────────────────────────────────────────────────
-function abrirDropdown() {
-    renderDropdown(allFolders);
 }
 
 function toggleDropdown() {
@@ -105,11 +97,10 @@ function renderDropdown(folders) {
 function selecionarPasta(id, nome) {
     pastaIdSelecionada   = id;
     pastaNomeSelecionada = nome;
-    document.getElementById('folder-search').value      = nome;
+    document.getElementById('folder-search').value       = nome;
     document.getElementById('folder-list').style.display = 'none';
 }
 
-// Fecha ao clicar fora
 document.addEventListener('click', e => {
     if (!e.target.closest('.folder-search-wrap') && !e.target.closest('#folder-list')) {
         const list = document.getElementById('folder-list');
@@ -117,7 +108,6 @@ document.addEventListener('click', e => {
     }
 });
 
-// ── Salvar no Drive ──────────────────────────────────────────────
 async function salvarNoDrive() {
     if (!pastaIdSelecionada) {
         mostrarResultado('⚠️ Selecione uma pasta antes de salvar.', false);
@@ -153,7 +143,6 @@ async function salvarNoDrive() {
     }
 }
 
-// ── Baixar Excel ─────────────────────────────────────────────────
 async function baixarExcel() {
     try {
         const res = await fetch('/api/exportar_relatorio_salas', {
@@ -179,7 +168,6 @@ async function baixarExcel() {
     }
 }
 
-// ── Resultado ─────────────────────────────────────────────────────
 function mostrarResultado(msg, ok) {
     const el = document.getElementById('export-result');
     el.textContent   = msg;
