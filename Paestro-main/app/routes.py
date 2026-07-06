@@ -367,12 +367,15 @@ def export_xml_drive():
 
 @main_bp.route('/api/export_excel_drive', methods=['POST'])
 def export_excel_drive():
-    """Gera o Excel de uma escola e envia para a pasta do Drive correspondente."""
+    """Gera o Excel de uma escola e envia para a pasta do Drive escolhida."""
     try:
-        req    = request.json
-        escola = req.get('escola', '')
-        turmas = req.get('turmas', [])
-        marks  = req.get('marks', {})
+        from app.services.drive_service import DEFAULT_FOLDER_ID
+
+        req       = request.json
+        escola    = req.get('escola', '')
+        turmas    = req.get('turmas', [])
+        marks     = req.get('marks', {})
+        folder_id = req.get('folder_id') or DEFAULT_FOLDER_ID
 
         if not escola:
             return jsonify({'success': False, 'error': 'Escola não informada'}), 400
@@ -387,22 +390,12 @@ def export_excel_drive():
         date_str = datetime.now().strftime('%d-%m-%Y')
         filename = f"conferencia_salas_{escola}_{date_str}.xlsx".replace(' ', '_')
 
-        # Descobre a pasta do Drive para esta escola
-        folder_map = current_app.config.get('FOLDER_MAP', {})
-        folder_id  = folder_map.get(escola) or folder_map.get(escola.upper())
-
-        if not folder_id:
-            return jsonify({
-                'success': False,
-                'error': f'Pasta do Drive não mapeada para "{escola}". Configure FOLDER_MAP em config.py.'
-            }), 400
-
         file_id = drive_service.upload_excel_to_drive(buf.getvalue(), filename, folder_id)
 
         if file_id in (None, 'drive-not-available'):
             return jsonify({
                 'success': False,
-                'error': 'Falha no upload. Verifique as credenciais do Google Drive.'
+                'error': 'Falha no upload. Verifique as credenciais e permissões da pasta.'
             }), 500
 
         return jsonify({'success': True, 'file_id': file_id, 'filename': filename})
@@ -410,3 +403,19 @@ def export_excel_drive():
     except Exception as e:
         logger.error(f"Erro export_excel_drive: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@main_bp.route('/api/list_drive_folders', methods=['GET'])
+def list_drive_folders_route():
+    """Retorna pastas do FOLDER_MAP do config — sem depender de API do Drive."""
+    try:
+        folder_map = current_app.config.get('FOLDER_MAP', {})
+        folders = [{'id': v, 'name': k} for k, v in sorted(folder_map.items())]
+        from app.services.drive_service import DEFAULT_FOLDER_ID
+        return jsonify({
+            'success': True,
+            'folders': folders,
+            'default_folder_id': DEFAULT_FOLDER_ID
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e), 'folders': []})
