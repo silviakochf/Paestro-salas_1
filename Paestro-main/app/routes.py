@@ -419,3 +419,17 @@ def list_drive_folders_route():
         })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e), 'folders': []})
+        @main_bp.route('/api/list_drive_folders', methods=['GET'])
+def list_drive_folders_route():
+    """Retorna pastas do FOLDER_MAP do config."""
+    try:
+        folder_map = current_app.config.get('FOLDER_MAP', {})
+        folders = [{'id': v, 'name': k} for k, v in sorted(folder_map.items())]
+        from app.services.drive_service import DEFAULT_FOLDER_ID
+        return jsonify({
+            'success': True,
+            'folders': folders,
+            'default_folder_id': DEFAULT_FOLDER_ID
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e), 'folders': []})
