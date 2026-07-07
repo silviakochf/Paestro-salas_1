@@ -1,116 +1,81 @@
 import os
 import io
 import json
+import base64
 import logging
+import requests
 from dotenv import load_dotenv
 
 load_dotenv()
 logger = logging.getLogger(__name__)
 
-DRIVE_ENABLED = False
-drive_service = None
-
+DRIVE_ENABLED = True  # Sempre habilitado via Apps Script
 DEFAULT_FOLDER_ID = "1TzxE-VvnOQTXz-CBZsmWMPv--yK6ZA4U"
 
-
-def initialize_drive():
-    global DRIVE_ENABLED, drive_service
-    try:
-        from google.oauth2 import service_account
-        from googleapiclient.discovery import build
-
-        SCOPES = ['https://www.googleapis.com/auth/drive']
-
-        json_creds = os.environ.get('GOOGLE_CREDENTIALS_JSON')
-        if not json_creds:
-            logger.warning("⚠️ GOOGLE_CREDENTIALS_JSON não encontrada — Drive desabilitado.")
-            return
-
-        # Tenta parsear como JSON direto
-        try:
-            creds_dict = json.loads(json_creds)
-            logger.info(f"✅ Credencial lida da variável de ambiente (project: {creds_dict.get('project_id')})")
-        except json.JSONDecodeError:
-            # É um caminho de arquivo
-            logger.info(f"Lendo credencial do arquivo: {json_creds}")
-            with open(json_creds) as f:
-                creds_dict = json.load(f)
-
-        credentials = service_account.Credentials.from_service_account_info(
-            creds_dict, scopes=SCOPES
-        )
-        drive_service = build('drive', 'v3', credentials=credentials)
-        DRIVE_ENABLED = True
-        logger.info(f"✅ Google Drive conectado! Service Account: {creds_dict.get('client_email')}")
-
-    except ImportError as e:
-        logger.error(f"❌ Biblioteca Google não instalada: {e}")
-    except Exception as e:
-        logger.error(f"❌ Erro ao conectar Drive: {type(e).__name__}: {e}")
+# URL do Google Apps Script que faz o upload
+APPS_SCRIPT_URL = os.environ.get(
+    'GOOGLE_APPS_SCRIPT_URL',
+    'https://script.google.com/macros/s/AKfycbynKYAQnvRy-s3bMm57KuADK1inIz8E4YcZJhWCm8lJxeCvzjljEr9EuggMRfW7MqYkhg/exec'
+)
 
 
-initialize_drive()
-
-
-def upload_excel_to_drive(excel_data: bytes, file_name: str, folder_id: str = None):
-    """Faz upload de bytes para o Drive. Retorna file_id ou None."""
-    if not DRIVE_ENABLED or not drive_service:
-        logger.error("❌ upload_excel_to_drive: Drive não habilitado")
-        return "drive-not-available"
-
+def upload_excel_to_drive(excel_data: bytes, file_name: str, folder_id: str = None) -> str:
+    """
+    Faz upload do Excel para o Google Drive via Apps Script.
+    Retorna o file_id ou None em caso de erro.
+    """
     fid = folder_id or DEFAULT_FOLDER_ID
-    logger.info(f"📤 Iniciando upload: {file_name} → pasta {fid}")
+    logger.info(f"📤 Upload via Apps Script: {file_name} → pasta {fid}")
 
     try:
-        from googleapiclient.http import MediaIoBaseUpload
+        payload = {
+            'fileName': file_name,
+            'folderId': fid,
+            'fileData': base64.b64encode(excel_data).decode('utf-8')
+        }
 
-        file_metadata = {'name': file_name, 'parents': [fid]}
-        media = MediaIoBaseUpload(
-            io.BytesIO(excel_data),
-            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            resumable=False
+        response = requests.post(
+            APPS_SCRIPT_URL,
+            json=payload,
+            timeout=60,
+            headers={'Content-Type': 'application/json'}
         )
 
-        result = drive_service.files().create(
-            body=file_metadata,
-            media_body=media,
-            fields='id'
-        ).execute()
+        result = response.json()
 
-        file_id = result.get('id')
-        logger.info(f"✅ Upload concluído! file_id: {file_id}")
-        return file_id
+        if result.get('success'):
+            file_id = result.get('fileId', 'ok')
+            logger.info(f"✅ Upload OK! fileId: {file_id}")
+            return file_id
+        else:
+            error = result.get('error', 'Erro desconhecido')
+            logger.error(f"❌ Apps Script retornou erro: {error}")
+            return None
 
+    except requests.exceptions.Timeout:
+        logger.error("❌ Timeout ao chamar o Apps Script")
+        return None
     except Exception as e:
-        logger.error(f"❌ Erro no upload para pasta {fid}: {type(e).__name__}: {e}")
+        logger.error(f"❌ Erro no upload via Apps Script: {e}")
         return None
 
 
 def list_drive_folders(parent_id=None):
-    """Lista subpastas de uma pasta do Drive."""
-    if not DRIVE_ENABLED or not drive_service:
-        return []
-    try:
-        q = "mimeType='application/vnd.google-apps.folder' and trashed=false"
-        q += f" and '{parent_id or DEFAULT_FOLDER_ID}' in parents"
-        result = drive_service.files().list(
-            q=q,
-            fields="files(id, name)",
-            supportsAllDrives=True,
-            includeItemsFromAllDrives=True
-        ).execute()
-        return result.get('files', [])
-    except Exception as e:
-        logger.error(f"Erro list_drive_folders: {e}")
-        return []
+    """Não usado — pastas vêm do FOLDER_MAP do config.py"""
+    return []
 
 
 def get_drive_folders():
     from flask import jsonify
-    if not DRIVE_ENABLED:
-        return jsonify({'success': False, 'error': 'Drive não habilitado', 'folders': []})
-    folders = list_drive_folders()
-    return jsonify({'success': True, 'folders': folders, 'default_folder_id': DEFAULT_FOLDER_ID})
+    return jsonify({
+        'success': True,
+        'folders': [],
+        'default_folder_id': DEFAULT_FOLDER_ID
+    })
+
+
+def is_drive_connected():
+    return True
 
 
 def export_attendance_drive(app_data):
