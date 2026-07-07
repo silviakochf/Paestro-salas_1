@@ -17,7 +17,7 @@
 }
 .stat-num  { font-size: 1.9rem; font-weight: 700; line-height: 1; }
 .stat-label{ font-size: .72rem; color: #94a3b8; margin-top: .2rem; }
-.stat-sn .stat-num { color: #22e9df; }
+.stat-sn .stat-num { color: #f1ee22; }
 .stat-ne .stat-num { color: #850e0e; }
 .stat-c  .stat-num { color: #12850e; }
 .stat-pend .stat-num { color: #475569; }
@@ -139,7 +139,7 @@ td.sala-col { font-weight: 600; color: var(--primary-color); }
   transition: all .15s;
 }
 .opt-btn:hover { border-color: #94a3b8; }
-.opt-btn.sel-SN { background: #d1f4fa; color: #22e9df; border-color: #86e3ef; }
+.opt-btn.sel-SN { background: #d1f4fa; color: #f1ee22; border-color: #edef86; }
 .opt-btn.sel-NE { background: #fec3c3; color: #850e0e; border-color: #fd4747; }
 .opt-btn.sel-C  { background: #e3fee2; color: #12850e; border-color: #a5fcb4; }
 .opt-btn.clear  { font-size: .75rem; padding: .2rem .5rem; color: #94a3b8; }
