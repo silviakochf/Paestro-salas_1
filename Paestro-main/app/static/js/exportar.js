@@ -1,69 +1,59 @@
-/**
- * exportar.js — Pastas vêm do FOLDER_MAP (config.py), igual à foto.
- */
+// exportar.js v4
 
-let escolaExportar       = '';
-let turmasExportar       = [];
-let marksExportar        = {};
-let allFolders           = [];
-let pastaIdSelecionada   = '';
-let pastaNomeSelecionada = '';
+var escolaExportar = '';
+var turmasExportar = [];
+var marksExportar = {};
+var allFolders = [];
+var pastaIdSelecionada = '';
+var pastaNomeSelecionada = '';
 
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        const r = await fetch('/api/get_current_user');
-        const d = await r.json();
-        document.getElementById('nome-usuario').textContent    = d.username || '';
-        document.getElementById('periodo-usuario').textContent = d.periodo  || '';
-    } catch(e) {}
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/api/get_current_user').then(function(r) { return r.json(); }).then(function(d) {
+        document.getElementById('nome-usuario').textContent = d.username || '';
+        document.getElementById('periodo-usuario').textContent = d.periodo || '';
+    }).catch(function(){});
+
     document.getElementById('data-atual').textContent =
-        new Date().toLocaleDateString('pt-BR', {
-            weekday:'long', day:'numeric', month:'long', year:'numeric'
-        });
+        new Date().toLocaleDateString('pt-BR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
 
     escolaExportar = sessionStorage.getItem('exportar_escola') || '';
     if (escolaExportar) {
         document.getElementById('escola-wrap').style.display = '';
-        document.getElementById('escola-label').textContent  = escolaExportar;
-        await carregarDadosEscola(escolaExportar);
+        document.getElementById('escola-label').textContent = escolaExportar;
     }
 
-    await carregarPastas();
-});
-
-async function carregarDadosEscola(escola) {
-    try {
-        const res  = await fetch('/api/get_salas_turmas', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({escola})
-        });
-        const data = await res.json();
-        turmasExportar = data.turmas || [];
-        marksExportar  = data.marks  || {};
-    } catch(e) { console.error(e); }
-}
-
-async function carregarPastas() {
-    try {
-        const res  = await fetch('/api/list_drive_folders');
-        const data = await res.json();
+    // Carrega pastas e configura tudo
+    fetch('/api/list_drive_folders').then(function(r) { return r.json(); }).then(function(data) {
         allFolders = data.folders || [];
 
-        // Registra eventos DEPOIS que as pastas carregaram
-        const input = document.getElementById('folder-search');
-        input.addEventListener('focus', () => renderDropdown(allFolders));
-        input.addEventListener('input', filtrarPastas);
+        if (escolaExportar) {
+            fetch('/api/get_salas_turmas', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({escola: escolaExportar})
+            }).then(function(r) { return r.json(); }).then(function(d) {
+                turmasExportar = d.turmas || [];
+                marksExportar = d.marks || {};
+            }).catch(function(e) { console.error(e); });
+        }
 
-    } catch(e) {
-        console.error('Erro ao carregar pastas:', e);
+        var input = document.getElementById('folder-search');
+        input.addEventListener('focus', function() { abrirDropdown(); });
+        input.addEventListener('input', function() { filtrarPastas(); });
+
+    }).catch(function(e) {
+        console.error('Erro pastas:', e);
         allFolders = [];
-    }
+    });
+});
+
+function abrirDropdown() {
+    renderDropdown(allFolders);
 }
 
 function toggleDropdown() {
-    const list = document.getElementById('folder-list');
-    if (list.style.display === 'none' || !list.style.display) {
+    var list = document.getElementById('folder-list');
+    if (list.style.display === 'none' || list.style.display === '') {
         renderDropdown(allFolders);
     } else {
         list.style.display = 'none';
@@ -71,107 +61,111 @@ function toggleDropdown() {
 }
 
 function filtrarPastas() {
-    const q = document.getElementById('folder-search').value.toLowerCase();
-    const filtered = q
-        ? allFolders.filter(f => f.name.toLowerCase().includes(q))
-        : allFolders;
+    var q = document.getElementById('folder-search').value.toLowerCase();
+    var filtered = q ? allFolders.filter(function(f) {
+        return f.name.toLowerCase().indexOf(q) >= 0;
+    }) : allFolders;
     renderDropdown(filtered);
 }
 
 function renderDropdown(folders) {
-    const list = document.getElementById('folder-list');
+    var list = document.getElementById('folder-list');
+    var html = '';
     if (!folders.length) {
-        list.innerHTML = `<div style="padding:.75rem 1rem;color:#94a3b8;font-size:.875rem">
-            Nenhuma pasta encontrada</div>`;
+        html = '<div style="padding:.75rem 1rem;color:#94a3b8;font-size:.875rem">Nenhuma pasta encontrada</div>';
     } else {
-        list.innerHTML = folders.map(f => `
-            <div class="folder-item ${f.id === pastaIdSelecionada ? 'selected' : ''}"
-                 onclick="selecionarPasta('${f.id}', '${f.name.replace(/'/g,"\\'")}')">
-                ${f.name}
-            </div>
-        `).join('');
+        for (var i = 0; i < folders.length; i++) {
+            var f = folders[i];
+            var sel = f.id === pastaIdSelecionada ? ' selected' : '';
+            var safeName = f.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            var safeId = f.id;
+            html += '<div class="folder-item' + sel + '" onclick="selecionarPasta(\'' + safeId + '\', \'' + safeName + '\')">' + f.name + '</div>';
+        }
     }
-    list.style.display = '';
+    list.innerHTML = html;
+    list.style.display = 'block';
 }
 
 function selecionarPasta(id, nome) {
-    pastaIdSelecionada   = id;
+    pastaIdSelecionada = id;
     pastaNomeSelecionada = nome;
-    document.getElementById('folder-search').value       = nome;
+    document.getElementById('folder-search').value = nome;
     document.getElementById('folder-list').style.display = 'none';
 }
 
-document.addEventListener('click', e => {
-    if (!e.target.closest('.folder-search-wrap') && !e.target.closest('#folder-list')) {
-        const list = document.getElementById('folder-list');
-        if (list) list.style.display = 'none';
+document.addEventListener('click', function(e) {
+    var wrap = document.querySelector('.folder-search-wrap');
+    var list = document.getElementById('folder-list');
+    if (!wrap || !list) return;
+    if (!wrap.contains(e.target) && !list.contains(e.target)) {
+        list.style.display = 'none';
     }
 });
 
-async function salvarNoDrive() {
+function salvarNoDrive() {
     if (!pastaIdSelecionada) {
-        mostrarResultado('⚠️ Selecione uma pasta antes de salvar.', false);
+        mostrarResultado('Selecione uma pasta antes de salvar.', false);
         return;
     }
+    var btn = document.getElementById('btn-drive');
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
 
-    const btn = document.getElementById('btn-drive');
-    btn.disabled  = true;
-    btn.innerHTML = '<i class="fas fa-circle-notch" style="animation:spin .8s linear infinite;display:inline-block"></i> Enviando…';
-
-    try {
-        const res = await fetch('/api/export_excel_drive', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                escola:    escolaExportar,
-                folder_id: pastaIdSelecionada,
-                turmas:    turmasExportar,
-                marks:     marksExportar
-            })
-        });
-        const data = await res.json();
+    fetch('/api/export_excel_drive', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            escola: escolaExportar,
+            folder_id: pastaIdSelecionada,
+            turmas: turmasExportar,
+            marks: marksExportar
+        })
+    }).then(function(r) { return r.json(); }).then(function(data) {
         if (data.success) {
-            mostrarResultado('✅ Excel salvo no Drive com sucesso!', true);
+            mostrarResultado('Excel salvo no Drive com sucesso!', true);
         } else {
-            mostrarResultado('❌ ' + (data.error || 'Falha no envio'), false);
+            mostrarResultado('Erro: ' + (data.error || 'Falha no envio'), false);
         }
-    } catch(e) {
-        mostrarResultado('❌ Erro de conexão ao enviar.', false);
-    } finally {
-        btn.disabled  = false;
-        btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Salvar no Drive';
-    }
+    }).catch(function() {
+        mostrarResultado('Erro de conexao ao enviar.', false);
+    }).finally(function() {
+        btn.disabled = false;
+        btn.textContent = 'Salvar no Drive';
+    });
 }
 
-async function baixarExcel() {
-    try {
-        const res = await fetch('/api/exportar_relatorio_salas', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                escola: escolaExportar,
-                turmas: turmasExportar,
-                marks:  marksExportar
-            })
-        });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const blob = await res.blob();
-        const url  = URL.createObjectURL(blob);
-        const a    = document.createElement('a');
-        const date = new Date().toISOString().slice(0,10);
-        a.href     = url;
-        a.download = `conferencia_salas_${escolaExportar || 'salas'}_${date}.xlsx`.replace(/\s+/g,'_');
+function baixarExcel() {
+    fetch('/api/exportar_relatorio_salas', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            escola: escolaExportar,
+            turmas: turmasExportar,
+            marks: marksExportar
+        })
+    }).then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.blob();
+    }).then(function(blob) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        var date = new Date().toISOString().slice(0,10);
+        var nome = (escolaExportar || 'salas').replace(/\s+/g,'_');
+        a.href = url;
+        a.download = 'conferencia_salas_' + nome + '_' + date + '.xlsx';
         a.click();
         URL.revokeObjectURL(url);
-    } catch(e) {
+    }).catch(function(e) {
         alert('Erro ao baixar: ' + e.message);
-    }
+    });
 }
 
 function mostrarResultado(msg, ok) {
-    const el = document.getElementById('export-result');
-    el.textContent   = msg;
-    el.className     = ok ? 'result-ok' : 'result-fail';
-    el.style.display = '';
-    if (ok) setTimeout(() => { el.style.display = 'none'; }, 6000);
+    var el = document.getElementById('export-result');
+    el.textContent = msg;
+    el.className = ok ? 'result-ok' : 'result-fail';
+    el.style.display = 'block';
+    if (ok) {
+        setTimeout(function() { el.style.display = 'none'; }, 6000);
+    }
 }
