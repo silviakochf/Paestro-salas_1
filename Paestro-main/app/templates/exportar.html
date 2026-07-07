@@ -47,8 +47,6 @@
             font-weight: 500;
             margin-bottom: 1.5rem;
         }
-
-        /* ── Campo busca — igual à foto ── */
         .folder-search-wrap {
             display: flex;
             align-items: center;
@@ -69,8 +67,6 @@
         }
         #folder-search::placeholder { color: #94a3b8; }
         #folder-dropdown-arrow { color: #475569; cursor: pointer; padding: 0 .25rem; flex-shrink:0 }
-
-        /* ── Dropdown lista — igual à foto ── */
         #folder-list {
             border: 1px solid #cbd5e1;
             border-top: none;
@@ -94,8 +90,6 @@
         .folder-item:last-child { border-bottom: none; }
         .folder-item:hover { background: #f8fafc; }
         .folder-item.selected { background: #eff6ff; color: #1d4ed8; font-weight: 500; }
-
-        /* ── Botão Salvar Drive — azul ── */
         .btn-drive {
             display: inline-flex;
             align-items: center;
@@ -116,8 +110,6 @@
         }
         .btn-drive:hover:not(:disabled) { background: #1d4ed8; }
         .btn-drive:disabled { opacity: .5; cursor: not-allowed; }
-
-        /* ── Divisor ── */
         .divider {
             display: flex;
             align-items: center;
@@ -132,8 +124,6 @@
             height: 1px;
             background: #e2e8f0;
         }
-
-        /* ── Botão Baixar Excel — verde ── */
         .btn-excel {
             display: inline-flex;
             align-items: center;
@@ -151,8 +141,6 @@
             width: 100%;
         }
         .btn-excel:hover { background: #15803d; }
-
-        /* ── Resultado ── */
         #export-result {
             margin-top: .75rem;
             padding: .7rem 1rem;
@@ -162,7 +150,6 @@
         }
         .result-ok   { background: #d1fae5; color: #065f46; border: 1px solid #86efac; }
         .result-fail { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
-
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
@@ -198,7 +185,6 @@
         <div class="export-container">
             <h3>Exportar Conferência de Salas</h3>
 
-            <!-- Escola selecionada -->
             <div id="escola-wrap" style="display:none">
                 <div class="escola-badge">
                     <i class="fas fa-school"></i>
@@ -206,40 +192,24 @@
                 </div>
             </div>
 
-            <!-- DRIVE -->
             <p class="export-section-title">Salvar conferência no Google Drive</p>
 
-            <!-- Campo busca pasta -->
-          <div class="folder-search-container">
+            <div class="folder-search-wrap">
+                <i class="fas fa-search"></i>
+                <input type="text" id="folder-search" placeholder="Buscar pasta..."/>
+                <i class="fas fa-chevron-down" id="folder-dropdown-arrow" onclick="toggleDropdown()"></i>
+            </div>
 
-    <div class="folder-search-wrap">
-        <i class="fas fa-search"></i>
+            <div id="folder-list"></div>
 
-        <input
-            type="text"
-            id="folder-search"
-            placeholder="Buscar pasta..."
-        />
-
-        <i class="fas fa-chevron-down"
-           id="folder-dropdown-arrow"
-           onclick="toggleDropdown()"></i>
-    </div>
-
-    <div id="folder-list"></div>
-
-</div>
-            <!-- Botão Drive -->
             <button class="btn-drive" id="btn-drive" onclick="salvarNoDrive()">
                 <i class="fas fa-cloud-upload-alt"></i> Salvar no Drive
             </button>
 
             <div id="export-result"></div>
 
-            <!-- Divisor -->
             <div class="divider">ou</div>
 
-            <!-- DOWNLOAD -->
             <p class="export-section-title">Baixar conferência no dispositivo</p>
             <button class="btn-excel" onclick="baixarExcel()">
                 <i class="fas fa-file-excel"></i> Baixar Excel
@@ -252,6 +222,6 @@
     </footer>
 
     <script src="{{ url_for('static', filename='js/modal.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/exportar.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/exportar.js') }}?v={{ range(1,99999)|random }}"></script>
 </body>
 </html>
