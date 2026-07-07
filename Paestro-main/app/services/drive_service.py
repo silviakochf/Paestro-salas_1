@@ -68,14 +68,13 @@ def upload_excel_to_drive(excel_data: bytes, file_name: str, folder_id: str = No
         media = MediaIoBaseUpload(
             io.BytesIO(excel_data),
             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            resumable=True
+            resumable=False
         )
 
         result = drive_service.files().create(
             body=file_metadata,
             media_body=media,
-            fields='id',
-            supportsAllDrives=True
+            fields='id'
         ).execute()
 
         file_id = result.get('id')
