@@ -20,6 +20,22 @@ def normalize_school_name(name):
     name_ascii = "".join([c for c in nfkd_form if not unicodedata.combining(c)])
     return " ".join(name_ascii.upper().split())
 
+
+def validate_classes(classes):
+    valid=[];missing=[];invalid=[]
+    gt_pattern=re.compile(r"^GT[0-5](\s?[A-G])?$",re.I)
+    fundamental_pattern=re.compile(r"^[1-9]º\s*ANO\s*(0[1-9]|10)$",re.I)
+    for turma in sorted(classes.keys()):
+        nome=turma.split("(")[0].strip().upper()
+        if gt_pattern.fullmatch(nome) or fundamental_pattern.fullmatch(nome):
+            valid.append(nome)
+        elif nome.startswith("GT") or "ANO" in nome:
+            invalid.append(nome)
+        else:
+            missing.append(nome)
+    return valid,missing,invalid
+
+
 def export_to_excel(classes, attendance_status, observations, html_content=None, current_user=None, periodo=None, escola_nome=None, unit_annotations=None):
     """
     Gera um arquivo Excel com a lista de presença formatada.
